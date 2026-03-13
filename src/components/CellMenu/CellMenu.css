@@ -1,0 +1,29 @@
+.cellmenu {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: start;
+  gap: 5px;              /* espace entre icône et input */
+  border-radius: 7px;    /* corner radius */
+  width: 100%;           /* prend toute la largeur du parent */
+  box-sizing: border-box; /* padding inclus dans la largeur */
+  height: 2.5em;
+  padding-left: 5px;
+  border: none;
+}
+
+.cellmenu:hover {
+    background-color: #00000008;
+}
+
+.cellmenu__text {
+  border: none;
+  outline: none;
+  flex: 1;               /* prend tout l'espace restant */
+  font-size: 1.1em;
+  background: transparent;
+  height: 100%;
+  color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+}

@@ -1,0 +1,10 @@
+.navline__container {
+    display: flex;
+    border: var(--border);
+    border-radius: 8px;
+}
+
+.navline__text {
+    padding: 0.1em 1em;
+    cursor: pointer;
+}

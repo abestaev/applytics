@@ -1,0 +1,22 @@
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 5px;              /* espace entre icône et input */
+  border: 1px solid #00000023; /* bordure grise */
+  border-radius: 7px;    /* corner radius */
+  width: 100%;           /* prend toute la largeur du parent */
+  background-color: #ffffff;
+  box-sizing: border-box; /* padding inclus dans la largeur */
+  height: 2.5em;
+  padding-left: 5px;
+}
+
+.search-bar__input {
+  border: none;
+  outline: none;
+  flex: 1;               /* prend tout l'espace restant */
+  font-size: 1em;
+  background: transparent;
+  height: 100%;
+  color: rgba(0, 0, 0, 0.6);
+}

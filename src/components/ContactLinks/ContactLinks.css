@@ -1,0 +1,19 @@
+.contactlinks__container {
+    display: flex;
+    flex-direction: row;
+    gap: 0.4em;
+    align-items: center;
+}
+
+.contactlinks__icon {
+    height: 1.1em
+}
+
+.contactlinks__link {
+    color: rgba(0, 0, 0, 0.9);
+    cursor: pointer;
+}
+
+.contactlinks__link:hover {
+    color: rgba(0, 0, 0, 0.8);
+}

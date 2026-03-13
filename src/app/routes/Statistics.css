@@ -1,0 +1,139 @@
+.statistics {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    overflow-x: hidden;
+}
+
+.statistics-container {
+    flex: 1;
+    padding: 5em 15em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.statistics__header {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.statistics__header__titlelight {
+    font-weight: 300;
+}
+
+.statistics__header__titlebold {
+    font-weight: 500;
+}
+
+
+
+
+.statistics-container-2 {
+    flex: 5;
+    padding: 2em;
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    width: 70vw;
+    max-width: 1500px;
+}
+
+.statistics__title__2 {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.statistics__graphes {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 1em;
+}
+
+
+
+.statistics__companies {
+    display: flex;
+    flex-direction: column;
+    border-radius: 5px;
+    border: var(--border);
+    width: 70vw;
+    max-width: 1500px;
+    max-height: 80vh;    
+}
+
+.statistics__companies__h2 {
+    margin: 0.5em 1em;
+    padding: 0;
+}
+
+.statistics__companies__options {
+    display: flex;
+    flex-direction: row;
+    border-top: var(--border);
+    padding: 1em;
+    gap: 1em;
+}
+
+
+/* HTML: <div class="loader"></div> */
+.loader {
+    margin-top: 1em;
+    width: fit-content;
+    font-family: monospace;
+    font-size: 2em;
+    animation: l25 1s infinite;
+    color: rgba(0, 0, 0, 0.8);
+}
+
+.loader::before {
+    content: "Loading...";
+}
+
+@keyframes l25 {
+
+    0%,
+    12.5% {
+        transform: translate(10px, 0)
+    }
+
+    13%,
+    25% {
+        transform: translate(4px, -4px)
+    }
+
+    26%,
+    37.5% {
+        transform: translate(2px, 8px)
+    }
+
+    38%,
+    50% {
+        transform: translate(12px, -6px)
+    }
+
+    51%,
+    62.5% {
+        transform: translate(0, 12px)
+    }
+
+    63%,
+    75% {
+        transform: translate(-8px, -4px)
+    }
+
+    76%,
+    86.5% {
+        transform: translate(-12px, 6px)
+    }
+
+    87%,
+    100% {
+        transform: translate(6px, 0)
+    }
+}
