@@ -1,6 +1,8 @@
 
 import type { RawApplication, AppDateGroupedType } from "@/types/general"
 import type { Application, GraphState } from "../../types/general"
+import { STATUS_TYPE, TYPE_VALUES } from "../../main"
+
 
 export const parseDate = (dateStr: string) => {
     if (!dateStr)
@@ -65,7 +67,7 @@ export const getLastInterviews = (datas: { Date: string, items: RawApplication[]
     return datas.reduce((acc, curr) => {
         if (curr.items) {
             const num = curr.items.reduce((acc, curr) => {
-                return (curr.interviews as number > 0 ? curr.Interviews as number : 0) + acc
+                return (curr.interviews as number > 0 ? curr.interviews as number : 0) + acc
             }, 0)
             acc.push(num as never)
         }
@@ -83,8 +85,6 @@ export const filerGraphDatasByMonth = (datas: { Date: string, items: RawApplicat
         return month === getMonthString(e.Date)
     })
 }
-
-
 
 
 
@@ -111,7 +111,7 @@ export const computeGraphData = (datas: Application[]): GraphState => {
 
     if (datasCurrentMonth.length === 0 && sortedDatas.length > 0) {
         currentMonth = getMonthString(sortedDatas[sortedDatas.length - 1].date)
-        datasCurrentMonth = filerGraphDatasByMonth(appsByDate, currentMonth)        
+        datasCurrentMonth = filerGraphDatasByMonth(appsByDate, currentMonth)
     }
 
     // const datasPreviousMonth = filerGraphDatasByMonth(datas, previousMonth)
@@ -147,3 +147,66 @@ export const normalizeDatas = (data: RawApplication, id: number): Application =>
     }
 }
 
+
+export const isAlphaNumeric = (s: string) => {
+    if (s === undefined || s.length === 0) return false
+    return /^[a-zA-Z 0-9]+$/.test(s)
+}
+
+export const isNumeric = (s: string) => {
+    if (s === undefined || s.length === 0) return false
+    return /^[0-9]+$/.test(s)
+}
+
+export const isAplha = (s: string) => {
+    if (s === undefined || s.length === 0) return false
+    return /^[a-zA-Z]+$/.test(s)
+}
+
+export const notNull = (s: string) => {
+    return s && s.length > 0
+}
+
+
+export const isValidDate = (dateStr: string): boolean => {
+
+    if (!notNull(dateStr))
+        return false
+
+    const regex = /^\d{2}\/\d{2}\/\d{4}$/
+    if (!regex.test(dateStr)) return false
+    const [day, month, year] = dateStr.split('/').map(Number)
+    const date = new Date(year, month - 1, day)
+
+    return (
+        date.getFullYear() === year &&
+        date.getMonth() === month - 1 &&
+        date.getDate() === day
+    )
+}
+
+export const trimObjValues = (obj: RawApplication) => {
+    for (const [k, v] of Object.entries(obj)) {
+        if (typeof v === 'string' && k)
+            obj[k as keyof RawApplication] = v.trim() as any
+    }
+    return obj
+}
+
+
+export const cleanDatas = (data: RawApplication[]) => {
+    return data.filter(e => {
+        e = trimObjValues(e)
+
+        const d = notNull(e.Company) &&
+            isValidDate(e.Date) &&
+            isAlphaNumeric(e.Speciality) &&
+            notNull(e.Status) && STATUS_TYPE.includes(e.Status) &&
+            notNull(e.Type) && TYPE_VALUES.includes(e.Type) &&
+            (e.City === undefined || e.City) &&
+            (e.Spontaneous === undefined || (e.Spontaneous.trim().toLocaleLowerCase() === "yes" || e.Spontaneous.trim().toLocaleLowerCase() === "no")) &&
+            (e.Interviews === undefined || isNumeric(e.Interviews.trim())) &&
+            (e.Others === undefined || e.Others.trim())
+        return d
+    })
+}

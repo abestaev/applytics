@@ -1,9 +1,9 @@
-import React, { useRef, useState } from 'react'
+import React, { useLayoutEffect, useRef, useState } from 'react'
 
 import '@/components/GraphBox/GraphBox.css'
 
 import greenChartIcon from '@/assets/greenChartIcon.svg'
-import ButtonIcon2 from '../ButtonIcon2/ButtonIcon2'
+import ButtonDots from '../ButtonDots/ButtonDots'
 import MiniChart from '../LineChart/LineChart'
 
 type GraphBoxProps = {
@@ -17,7 +17,20 @@ type GraphBoxProps = {
 
 function GraphBox({ data, placeholder, result, monthProgression, color, lineColor }: GraphBoxProps) {
 
+
     const divRef = useRef<HTMLDivElement>(null)
+    const [size, setSize] = useState({ width: 300, height: 50 })
+
+    useLayoutEffect(() => {
+        if (!divRef.current) return
+        if (!data || data.length === 0) return 
+        if (size.height !== 50) return 
+
+        setSize({
+            width: divRef.current.offsetWidth,
+            height: divRef.current.offsetHeight
+        })
+    }, [data])
 
     return (
         <div className='graphbox blur'>
@@ -37,15 +50,15 @@ function GraphBox({ data, placeholder, result, monthProgression, color, lineColo
                         }
                         <p className='graphbox__text'>vs last month</p>
                     </div>
-                    <ButtonIcon2 icon='more' />
+                    <ButtonDots icon='more' />
                 </div>
 
                 <div ref={divRef}>
                     {
                         data && data.length > 0 &&
                         <MiniChart
-                            height={divRef.current?.offsetHeight || 70}
-                            width={divRef.current?.offsetWidth || 300}
+                            height={size.height}
+                            width={size.width}
                             data={data}
                             lineColor={lineColor}
                             color={color}

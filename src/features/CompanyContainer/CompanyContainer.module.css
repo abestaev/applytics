@@ -1,0 +1,23 @@
+
+.statistics__companies {
+    display: flex;
+    flex-direction: column;
+    border-radius: 5px;
+    border: var(--border);
+    width: 70vw;
+    max-width: 1500px;
+    height: 650px;    
+}
+
+.statistics__companies__h2 {
+    margin: 0.5em 1em;
+    padding: 0;
+}
+
+.statistics__companies__options {
+    display: flex;
+    flex-direction: row;
+    border-top: var(--border);
+    padding: 1em;
+    gap: 1em;
+}

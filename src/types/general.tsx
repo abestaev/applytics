@@ -3,13 +3,13 @@
 export type RawApplication = {
     Company: string,
     Link: string,
-    Date: Date | string,
+    Date: string,
     Speciality: string,
     Status: string,
     Type: "CDI" | "Internship",
     City?: string,
-    Spontaneous?: boolean | string,
-    Interviews?: number | string,
+    Spontaneous?: string,
+    Interviews?: string,
     Others?: string
 }
 
@@ -32,24 +32,12 @@ export type Application = {
 export type ApplicationState = Application[]
 
 
-
-
-
-
-
 export type GraphState = {
     totalInterviews: number,
     totalResumesSent: number,
     totalResponsesRecieved: number,
     graphDatas: Array<any>
 }
-
-
-
-
-
-
-
 
 
 export type AppDateGroupedType = {

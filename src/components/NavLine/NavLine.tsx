@@ -33,7 +33,7 @@ const NavLine = ({ speciality, specialities, setSpeciality }: NavLineProps) => {
     return (
         <div className='navline__container blur'>
             {
-                specialities && specialities.map((e, i) =>
+                specialities && specialities.filter(e => e && e.match('^[a-zA-Z0-9]+$')).map((e, i) =>
                     <p
                         key={i}
                         className='navline__text'

@@ -1,19 +1,19 @@
-.buttonicon2 {
+.ButtonDots {
     cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.buttonicon2__icon {
+.ButtonDots__icon {
     height: 1.5em;
 }
 
-.buttonicon2__icon:hover {
+.ButtonDots__icon:hover {
     background-color: rgba(0, 0, 0, 0.05);
     border-radius: 5px;
 }
 
-.buttonicon2__icon:active {
+.ButtonDots__icon:active {
 background-color: rgba(0, 0, 0, 0.08);
 }

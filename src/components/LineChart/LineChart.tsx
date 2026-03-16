@@ -10,12 +10,21 @@ type MiniChartProps = {
 
 export default function MiniChart({ height, width, data, color, lineColor }: MiniChartProps) {
 
+
   const min = Math.min(...data)
   const max = Math.max(...data)
 
   const points = data.map((value, index) => {
-    const x = (index / (data.length - 1)) * width
-    const normalized = (value - min) / (max - min || 1)
+    let x;
+    let normalized;
+    if (!index || !(data.length - 1))
+      x = 0
+    else
+      x = (index / (data.length - 1)) * width
+    if (value - min === 0)
+      normalized = 0
+    else
+      normalized = (value - min) / (max - min || 1)
     const y = height - normalized * height
     return `${x},${y}`
   })

@@ -1,15 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react'
 import './DataLine.css'
 import type { Application } from '../../types/general'
-import { useDatas } from '../../hooks/useDatas'
+
 
 type DataLineProps = {
+    index: number,
     application: Application,
     applications: Application[]
     percentTotal: number
 }
 
-function DataLine({ application, percentTotal }: DataLineProps) {
+function DataLine({ index, application, percentTotal }: DataLineProps) {
 
 
     const percentDivRef = useRef<HTMLDivElement>(null)
@@ -28,7 +29,7 @@ function DataLine({ application, percentTotal }: DataLineProps) {
     const displayAppInfo = (application: Application) => {
         const f = []
         for (const [key, value] of Object.entries(application)) {
-            f.push(<p style={{overflow: 'hidden', width: '100%'}}><strong>{key}</strong>: {value}</p>)
+            f.push(<p key={key} style={{ overflow: 'hidden', width: '100%' }}><strong>{key}</strong>: {value}</p>)
         }
         return f
     }
@@ -40,59 +41,44 @@ function DataLine({ application, percentTotal }: DataLineProps) {
                 onClick={() => setSelected(e => !e)}
                 className='dataline-container'
                 style={{
-                    display: 'grid',
-                    padding: '0.5em 1em',
-                    borderTop: 'var(--border)',
-                    gridTemplateColumns: 'auto 4fr 1fr 1fr 1fr 1fr',
-                    rowGap: '1em'
+                    borderTop: index === 0 ? 'none' : 'var(--border)'
                 }}
             >
-                <div style={{ marginRight: '1em', justifyItems: 'flex-start' }}>
+                <div className='dataline-div' style={{ marginRight: '1em' }}>
                     <input type="checkbox" />
                 </div>
 
-                <div style={{ justifyItems: 'flex-start' }}>
-                    <p className='dataline-text'>{application?.company || ""}</p>
+                <div className='dataline-div'>
+                    <p >{application?.company || ""}</p>
                 </div>
 
-                <div style={{ justifyItems: 'flex-start' }}>
-                    <p>{application?.date as string || ""}</p>
+                <div className='dataline-div'>
+                    <p>{application?.date || ""}</p>
                 </div>
 
-                <div style={{ justifyItems: 'flex-start' }}>
+                <div className='dataline-div'>
                     <p>{application?.type || ""}</p>
                 </div>
 
-                <div
-                    style={{
-                        width: '100%',
-                        overflow: 'hidden'
-                    }}
-                >
-                    <p style={{
-                        width: '100%',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis'
-                    }}>{application?.city || ""}</p>
+                <div className='dataline-div'>
+                    <p>{application?.city || ""}</p>
                 </div>
 
-                <div style={{ display: 'flex', justifyItems: 'flex-start', alignItems: 'center', gap: '1em' }}>
+                <div className='dataline__c-percent'>
                     <div
                         ref={percentDivRef}
+                        className='dataline__c-percent-p'
                         style={{
                             position: 'relative',
                             backgroundColor: 'rgba(165, 47, 47, 0.08)',
-                            height: '0.7em',
+                            height: '0.5em',
                             flex: '4',
                             borderRadius: '1em',
                         }}
                     ></div>
                     <div
+                        className='dataline__c-percent-a'
                         style={{
-                            position: 'absolute',
-                            backgroundColor: '#90b7ff',
-                            borderRadius: '1em',
                             height: `${percentDivRef.current?.offsetHeight}px`,
                             width: `${width * percentTotal / 100}px`,
                         }}
@@ -101,6 +87,8 @@ function DataLine({ application, percentTotal }: DataLineProps) {
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
+                        fontSize: '0.95em',
+                        color: 'var(--text-color-800)'
                     }}>{percentTotal}%</p>
                 </div>
 
@@ -111,7 +99,7 @@ function DataLine({ application, percentTotal }: DataLineProps) {
                     style={{
                         display: 'flex',
                         flexDirection: 'column',
-                        padding: '1em', 
+                        padding: '1em',
                     }}
                 >
                     {

@@ -21,15 +21,15 @@ const ICONS: Record<string, string> = {
 const ButtonIcon = ({ icon, placeholder, onClick }: ButtonIconProps) => {
   return (
     <div>
-      <button className="button-icon" onClick={onClick}>
-        <img className="button-icon__icon" src={ICONS[icon] || filterIcon} alt={placeholder} />
+      <button  onClick={onClick}>
+        <img  src={ICONS[icon] || filterIcon} alt={placeholder} />
         {
           placeholder &&
           <>
-            <span className="button-icon__text">{placeholder}</span>
+            <span>{placeholder}</span>
             {
               icon === "downloadIcon" &&
-                <img className="button-icon__icon" src={googleSheetIcon} alt={placeholder} />
+                <img src={googleSheetIcon} alt={placeholder} />
             }
           </>
         }

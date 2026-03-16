@@ -1,0 +1,13 @@
+.upload__container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 3em;
+}
+
+.upload__container-instructions {
+    font-size: 0.94em;
+    margin-bottom: 1em;
+    z-index: 1;
+}

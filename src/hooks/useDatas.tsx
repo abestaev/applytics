@@ -7,7 +7,6 @@ export const useDatas = (data: ApplicationState) => {
 
     const [speciality, setSpeciality] = useState("")
 
-
     const specialities = useMemo(
         () => {
             const spes = Array.from(new Set(data.map((item: Application) => item.speciality)))
@@ -20,8 +19,8 @@ export const useDatas = (data: ApplicationState) => {
 
     const graphState = useMemo(
         () => {
-            const d = data.filter(e => e.speciality === speciality)
-            return computeGraphData(d)
+            const appsBySpeciality = data.filter(e => e.speciality === speciality)
+            return computeGraphData(appsBySpeciality)
         },
         [data, speciality]
     )
@@ -40,3 +39,5 @@ export const useDatas = (data: ApplicationState) => {
         currentApplications
     }
 }
+
+

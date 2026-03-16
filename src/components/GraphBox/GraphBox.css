@@ -6,6 +6,12 @@
     border-radius: 8px;
 }
 
+.graphbox:hover {
+    border-color: rgb(0, 0, 0, 0.05);
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.03);
+    
+}
+
 .graphbox__title {
     margin: 0;
     color: rgba(0, 0, 0, 0.9);

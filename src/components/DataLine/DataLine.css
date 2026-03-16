@@ -1,10 +1,47 @@
-
-
 .dataline-container {
-
+    display: grid;
+    padding: 0.5em 1em;
+    grid-template-columns: auto 4fr 1fr 1fr 1fr 1fr;
+    row-gap: 1em;
 }
 
 .dataline-container:hover {
     background-color: var(--bg-back-1);
     cursor: pointer;
 }
+
+.dataline-container>div {
+    justify-items: flex-start;
+    width: 100%;
+    overflow: hidden;
+}
+
+.dataline-div>p {
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.95em;
+    color: var(--text-color-800);
+}
+
+.dataline__c-percent {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+}
+
+.dataline__c-percent-p {
+    position: relative;
+    background-color: var(--bg-percent-1);
+    height: 0.5em;
+    flex: 4;
+    border-radius: 1em;
+}
+
+.dataline__c-percent-a {
+    position: absolute;
+    background: var(--bg-percent-2);
+    border-radius: 1em;
+}
+

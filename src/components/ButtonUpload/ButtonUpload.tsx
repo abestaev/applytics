@@ -10,19 +10,19 @@ type ButtonUploadProps = {
 
 export function ButtonUpload({ placeholder, onChange }: ButtonUploadProps) {
   return (
-    <label className="button-icon">
+    <label>
       <input
         type="file"
         onChange={onChange}
         style={{ display: 'none' }}
       />
 
-      <img className="button-icon__icon" src={downloadIcon} alt="" />
+      <img src={downloadIcon} alt="" />
 
       {placeholder && (
         <>
-          <span className="button-icon__text">{placeholder}</span>
-          <img className="button-icon__icon" src={googleSheetIcon} alt="" />
+          <span>{placeholder}</span>
+          <img src={googleSheetIcon} alt="" />
         </>
       )}
     </label>

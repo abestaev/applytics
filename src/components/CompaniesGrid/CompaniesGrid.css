@@ -1,0 +1,28 @@
+.comp__grid {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+}
+
+.comp__grid-rowgrid {
+    display: grid;
+    padding: 0.5em 1em;
+    border-top: var(--border);
+    border-bottom: var(--border);
+    grid-template-columns: auto 4fr 1fr 1fr 1fr 1fr;
+    row-gap: 1em;
+}
+
+.comp__grid-rowgrid > div {
+    justify-items: flex-start;
+    margin-right: auto;
+}
+
+.comp__grid-c {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+
+}
