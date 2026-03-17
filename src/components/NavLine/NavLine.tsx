@@ -1,5 +1,5 @@
 
-import '@/components/NavLine/NavLine.css'
+import styles from '@/components/NavLine/NavLine.module.css'
 
 
 type NavLineProps = {
@@ -31,12 +31,12 @@ const NavLine = ({ speciality, specialities, setSpeciality }: NavLineProps) => {
     }
 
     return (
-        <div className='navline__container blur'>
+        <div className={`${styles.container} blur`}>
             {
                 specialities && specialities.filter(e => e && e.match('^[a-zA-Z0-9]+$')).map((e, i) =>
                     <p
                         key={i}
-                        className='navline__text'
+                        className={styles.text}
                         onClick={() => updateCategorie(speciality, e)}
                         style={speciality == e ? pickStyle(i) : {}}
                     >

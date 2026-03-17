@@ -1,10 +1,12 @@
 import React, { useLayoutEffect, useRef, useState } from 'react'
 
-import '@/components/GraphBox/GraphBox.css'
 
 import greenChartIcon from '@/assets/greenChartIcon.svg'
 import ButtonDots from '../ButtonDots/ButtonDots'
-import MiniChart from '../LineChart/LineChart'
+import ProgressBar from '../LineChart/LineChart'
+
+import styles from '@/components/GraphBox/GraphBox.module.css'
+
 
 type GraphBoxProps = {
     data: Array<number>,
@@ -23,8 +25,8 @@ function GraphBox({ data, placeholder, result, monthProgression, color, lineColo
 
     useLayoutEffect(() => {
         if (!divRef.current) return
-        if (!data || data.length === 0) return 
-        if (size.height !== 50) return 
+        if (!data || data.length === 0) return
+        if (size.height !== 50) return
 
         setSize({
             width: divRef.current.offsetWidth,
@@ -33,30 +35,35 @@ function GraphBox({ data, placeholder, result, monthProgression, color, lineColo
     }, [data])
 
     return (
-        <div className='graphbox blur'>
-            <h3 className='graphbox__title'>{placeholder}</h3>
-            <div className='graphbox__graph'>
-                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+        <div className={`${styles.graphbox} blur`}>
 
-                    <div className='graphbox__results'>
-                        <p className='graphbox__result'>{result}</p>
+            <h3 className={styles.title}>{placeholder}</h3>
+
+            <div className={styles.body}>
+
+                <div className={styles.body__header}>
+
+                    <div className={styles.results}>
+                        <p className={styles.results__title}>{result}</p>
                         {
                             data && data.length > 0 ?
                                 <>
-                                    <img className='graphbox__icon' src={greenChartIcon} />
-                                    <p className='graphbox__monthprogression'>{monthProgression}%</p>
+                                    <img className={styles.results__icon} src={greenChartIcon} />
+                                    <p className={styles.results__monthprogression}>{monthProgression}%</p>
                                 </>
-                                : <p className='graphbox__monthprogression' style={{ color: 'black' }}>-</p>
+                                : <p className={styles.results__monthprogression} style={{ color: 'black' }}>-</p>
                         }
-                        <p className='graphbox__text'>vs last month</p>
+                        <p className={styles.results__text}>vs last month</p>
                     </div>
-                    <ButtonDots icon='more' />
+
+                    <ButtonDots />
+
                 </div>
 
                 <div ref={divRef}>
                     {
                         data && data.length > 0 &&
-                        <MiniChart
+                        <ProgressBar
                             height={size.height}
                             width={size.width}
                             data={data}

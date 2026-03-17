@@ -1,4 +1,4 @@
-.upload__container {
+.container {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -6,7 +6,7 @@
     margin-top: 3em;
 }
 
-.upload__container-instructions {
+.instructions {
     font-size: 0.94em;
     margin-bottom: 1em;
     z-index: 1;

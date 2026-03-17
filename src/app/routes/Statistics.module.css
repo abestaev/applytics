@@ -7,7 +7,7 @@
     overflow-x: hidden;
 }
 
-.statistics-container {
+.container {
     flex: 1;
     padding: 5em 15em;
     width: 100%;
@@ -17,24 +17,28 @@
 }
 
 
-.stat__header-container {
+.header {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
 }
 
-.stat__header-title {
+.header__title {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
 }
 
+.header__text {
+    margin-top: 1em;
+    font-size: 1.1em;
+}
 
 
 
-.stat__body {
+.body {
     flex: 5;
     margin-top: 5vh;
     padding-bottom: 5vh;
@@ -45,14 +49,14 @@
     width: 70vw;
 }
 
-.stat__body-title {
+.body__title {
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
 }
 
-.stat__graphs {
+.graph {
     display: flex;
     flex-direction: row;
     justify-content: space-between;

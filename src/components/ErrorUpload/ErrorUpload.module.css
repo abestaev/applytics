@@ -1,0 +1,21 @@
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1em;
+    margin-top: 1em;
+}
+
+.arrows__container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.text {
+    padding: 0.5em 0;
+}
+
+.arrow3 {
+    display: flex;
+    justify-self: center;
+}

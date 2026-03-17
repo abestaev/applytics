@@ -1,5 +1,5 @@
 
-import '@/components/NavButton/NavButton.css'
+import styles from '@/components/NavButton/NavButton.module.css'
 
 
 function NavButton() {
@@ -14,22 +14,21 @@ function NavButton() {
     }
 
     return (
-        <div className='navbutton__container'>
+        <div className={styles.container}>
             <button
-                className='navbutton__button'
+                className={styles.button}
                 style={pickStyle(0)}
             >
                 View All
             </button>
             <button
-                className='navbutton__button'
+                className={styles.button}
                 style={pickStyle(1)}
-
             >
                 Public
             </button>
             <button
-                className='navbutton__button'
+                className={styles.button}
                 style={pickStyle(2)}
             >
                 Private

@@ -16,6 +16,7 @@
 
   --bg-black-1: rgba(0, 0, 0, 0.008);
   --bg-black-2: rgba(0, 0, 0, 0.02);
+
   
   --bg-percent-1: rgba(165, 47, 47, 0.08);
   --bg-percent-2: #b6d0ff;
@@ -28,7 +29,10 @@
 
   --text-color-900: rgba(0, 0, 0, 0.9);
   --text-color-800: rgba(0, 0, 0, 0.8);
+  --text-color-700: rgba(0, 0, 0, 0.7);
+  --text-color-600: rgba(0, 0, 0, 0.6);
 
+  
   --gcolor-green-1: #207900;
   --gcolor-green-2: #aaff8b;
 

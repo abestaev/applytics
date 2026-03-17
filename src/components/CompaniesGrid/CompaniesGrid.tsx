@@ -1,9 +1,9 @@
 
 import Field from '@/components/Field/Field.tsx'
 import DataLine from '@/components/DataLine/DataLine.tsx'
-import type { Application } from '../../types/general'
+import type { Application } from '../../types/applications'
 
-import '@/components/CompaniesGrid/CompaniesGrid.css'
+import styles from '@/components/CompaniesGrid/CompaniesGrid.module.css'
 
 import '@/index.css'
 
@@ -14,10 +14,9 @@ type CompaniesGridType = {
 function CompaniesGrid({ applications }: CompaniesGridType) {
 
     return (
-
-        <div className='comp__grid' >
+        <div className={styles.container} >
             <div
-                className='comp__grid-rowgrid'
+                className={styles.grid__row}
             >
                 <div style={{ marginRight: '1em' }}>
                     <input type="checkbox" />
@@ -38,7 +37,7 @@ function CompaniesGrid({ applications }: CompaniesGridType) {
                     <Field placeholder="% of total" />
                 </div>
             </div>
-            <div className='comp__grid-c scrollable'>
+            <div className={`${styles.container__apps} scrollable`}>
                 {
                     applications?.map((a: Application, i: number) =>
                         <DataLine

@@ -1,0 +1,22 @@
+.container {
+  display: flex;
+  align-items: center;
+  gap: 5px;              
+  border: 1px solid #00000023; 
+  border-radius: 7px;    
+  width: 100%;           
+  background-color: #ffffff;
+  box-sizing: border-box;
+  height: 2.5em;
+  padding-left: 5px;
+}
+
+.input {
+  border: none;
+  outline: none;
+  flex: 1;               
+  font-size: 1em;
+  background: transparent;
+  height: 100%;
+  color: rgba(0, 0, 0, 0.6);
+}

@@ -1,4 +1,4 @@
-.navline__container {
+.container {
     display: flex;
     border: var(--border);
     border-radius: 8px;
@@ -9,7 +9,7 @@
     background-color: var(--bg-black-1);
 }
 
-.navline__text {
+.text {
     padding: 0.1em 1em;
     cursor: pointer;
     max-width: 200px;

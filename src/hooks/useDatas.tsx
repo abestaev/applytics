@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react"
-import type { Application, ApplicationState } from "../types/general"
-import { computeGraphData, sortAppsByDate } from "../features/applicationsDatas/utils"
+import type { Application, ApplicationState } from "../types/applications"
+import { computeGraphData } from "../utils/parsing/graph"
+import { sortAppsByDate } from "../utils/parsing/date"
 
 
 export const useDatas = (data: ApplicationState) => {

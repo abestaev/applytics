@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from 'react'
 
-
 import NavButton from '@/components/NavButton/NavButton'
 import SearchBar from '../../components/SearchBar/SearchBar'
 import ButtonIcon from '../../components/ButtonIcon/ButtonIcon'
-import type { Application } from '../../types/general'
+import type { Application } from '../../types/applications'
 import CompaniesGrid from '../../components/CompaniesGrid/CompaniesGrid'
 
 import styles from './CompanyContainer.module.css'
 
 type CompanyContainerProps = {
+    speciality: string,
     applications: Application[]
 }
 
-function CompanyContainer({ applications }: CompanyContainerProps) {
+function CompanyContainer({ speciality, applications }: CompanyContainerProps) {
 
     const [currentApplications, setCurrentApplications] = useState<Array<Application>>([])
 
@@ -24,38 +24,35 @@ function CompanyContainer({ applications }: CompanyContainerProps) {
             setCurrentApplications(applications)
     }, [applications])
 
+    useEffect(() => {
+        setSearchInput("")
+    }, [speciality])
+
 
     const searchApps = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.value && e.target.value.length < 100)
+        if (e.target.value && e.target.value.length < 100) {
+            setSearchInput(e.target.value)
             setCurrentApplications(applications.filter(a => a.company.startsWith(e.target.value.toUpperCase()) || a.company.startsWith(e.target.value)))
-        else
+        }
+        else {
+            setSearchInput("")
             setCurrentApplications(applications)
+        }
     }
 
 
     return (
-        <div className={`${styles.statistics__companies} blur`}>
+        <div className={`${styles.container} blur`}>
 
-            <h2 className={styles.statistics__companies__h2}>Companies</h2>
-            <div className={styles.statistics__companies__options}>
-                <div style={{
-                    flex: '2',
-                    display: 'flex',
-                    alignContent: 'flex-start'
-                }}>
+            <h2 className={styles.title}>Companies</h2>
+            <div className={styles.row}>
+                <div className={styles.row__navbutton} >
                     <NavButton />
                 </div>
-                <div
-                    style={{
-                        display: 'flex',
-                        gap: '1em',
-                        flex: '1'
-                    }}
-                >
+                <div className={styles.row__searchbar} >
                     <SearchBar
                         searchInput={searchInput}
                         setSearchInput={searchApps}
-                        applications={currentApplications}
                     />
                     <ButtonIcon icon="filterIcon" placeholder="Filters" onClick={() => { }} />
                 </div>

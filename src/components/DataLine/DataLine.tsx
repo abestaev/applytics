@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react'
-import './DataLine.css'
-import type { Application } from '../../types/general'
+import type { Application } from '../../types/applications'
 
+
+import styles from '@/components/DataLine/DataLine.module.css'
 
 type DataLineProps = {
     index: number,
@@ -11,7 +12,6 @@ type DataLineProps = {
 }
 
 function DataLine({ index, application, percentTotal }: DataLineProps) {
-
 
     const percentDivRef = useRef<HTMLDivElement>(null)
 
@@ -25,82 +25,65 @@ function DataLine({ index, application, percentTotal }: DataLineProps) {
         }
     }, [percentDivRef])
 
-
     const displayAppInfo = (application: Application) => {
         const f = []
         for (const [key, value] of Object.entries(application)) {
-            f.push(<p key={key} style={{ overflow: 'hidden', width: '100%' }}><strong>{key}</strong>: {value}</p>)
+            f.push(<p key={key} className='dataline__extend-text'><strong>{key}</strong>: {value}</p>)
         }
         return f
     }
-
 
     return (
         <>
             <div
                 onClick={() => setSelected(e => !e)}
-                className='dataline-container'
+                className={styles.dataline}
                 style={{
                     borderTop: index === 0 ? 'none' : 'var(--border)'
                 }}
             >
-                <div className='dataline-div' style={{ marginRight: '1em' }}>
+                <div className={styles.dataline__cell} style={{ marginRight: '1em' }}>
                     <input type="checkbox" />
                 </div>
 
-                <div className='dataline-div'>
+                <div className={styles.dataline__cell}>
                     <p >{application?.company || ""}</p>
                 </div>
 
-                <div className='dataline-div'>
+                <div className={styles.dataline__cell}>
                     <p>{application?.date || ""}</p>
                 </div>
 
-                <div className='dataline-div'>
+                <div className={styles.dataline__cell}>
                     <p>{application?.type || ""}</p>
                 </div>
 
-                <div className='dataline-div'>
+                <div className={styles.dataline__cell}>
                     <p>{application?.city || ""}</p>
                 </div>
 
-                <div className='dataline__c-percent'>
+                <div className={styles.dataline__percent}>
                     <div
                         ref={percentDivRef}
-                        className='dataline__c-percent-p'
-                        style={{
-                            position: 'relative',
-                            backgroundColor: 'rgba(165, 47, 47, 0.08)',
-                            height: '0.5em',
-                            flex: '4',
-                            borderRadius: '1em',
-                        }}
+                        className={styles.dataline__bar}
                     ></div>
                     <div
-                        className='dataline__c-percent-a'
+                        className={styles['dataline__bar-fill']}
                         style={{
                             height: `${percentDivRef.current?.offsetHeight}px`,
                             width: `${width * percentTotal / 100}px`,
                         }}
                     ></div>
-                    <p style={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        fontSize: '0.95em',
-                        color: 'var(--text-color-800)'
-                    }}>{percentTotal}%</p>
+                    <p
+                        className={styles['dataline__percent-text']}
+                    >{percentTotal}%</p>
                 </div>
 
             </div>
             {
                 selected &&
                 <div
-                    style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        padding: '1em',
-                    }}
+                    className={styles.dataline__extend}
                 >
                     {
                         displayAppInfo(application)

@@ -1,5 +1,5 @@
 
-.statistics__companies {
+.container {
     display: flex;
     flex-direction: column;
     border-radius: 5px;
@@ -9,15 +9,27 @@
     height: 650px;    
 }
 
-.statistics__companies__h2 {
+.title {
     margin: 0.5em 1em;
     padding: 0;
 }
 
-.statistics__companies__options {
+.row {
     display: flex;
     flex-direction: row;
     border-top: var(--border);
     padding: 1em;
     gap: 1em;
+}
+
+.row__navbutton {
+    flex: 2;
+    display: flex;
+    align-content: flex-start;
+}
+
+.row__searchbar {
+    display: flex;
+    gap: 1em;
+    flex: 1
 }

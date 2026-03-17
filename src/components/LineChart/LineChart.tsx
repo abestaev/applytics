@@ -1,6 +1,6 @@
-import '@/components/LineChart/LineChart.css'
+import styles from  '@/components/LineChart/LineChart.module.css'
 
-type MiniChartProps = {
+type ProgressBarProps = {
   height: number,
   width: number,
   data: number[],
@@ -8,7 +8,7 @@ type MiniChartProps = {
   lineColor: string
 }
 
-export default function MiniChart({ height, width, data, color, lineColor }: MiniChartProps) {
+export default function ProgressBar({ height, width, data, color, lineColor }: ProgressBarProps) {
 
 
   const min = Math.min(...data)
@@ -39,7 +39,7 @@ export default function MiniChart({ height, width, data, color, lineColor }: Min
   `
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="mini-chart">
+    <svg viewBox={`0 0 ${width} ${height}`} className={styles.svg}>
       <defs>
         <linearGradient id={`chartGradient-${color}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.25" />
@@ -48,7 +48,7 @@ export default function MiniChart({ height, width, data, color, lineColor }: Min
       </defs>
 
       <path d={areaPath} fill={`url(#chartGradient-${color})`} />
-      <path d={linePath} className="mini-chart__line" style={{ stroke: `${lineColor}` }} />
+      <path d={linePath} className={styles.line} style={{ stroke: `${lineColor}` }} />
     </svg>
   )
 }

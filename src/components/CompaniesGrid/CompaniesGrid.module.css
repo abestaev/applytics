@@ -1,11 +1,11 @@
-.comp__grid {
+.container {
     position: relative;
     display: flex;
     flex-direction: column;
     overflow: auto;
 }
 
-.comp__grid-rowgrid {
+.grid__row {
     display: grid;
     padding: 0.5em 1em;
     border-top: var(--border);
@@ -14,12 +14,12 @@
     row-gap: 1em;
 }
 
-.comp__grid-rowgrid > div {
+.grid__row > div {
     justify-items: flex-start;
     margin-right: auto;
 }
 
-.comp__grid-c {
+.container__apps {
     position: relative;
     display: flex;
     flex-direction: column;

@@ -1,20 +1,17 @@
-import React from 'react'
 
 import moreIcon from '@/assets/moreIcon.svg'
-import '@/components/ButtonDots/ButtonDots.css'
+
+import styles from  '@/components/ButtonDots/ButtonDots.module.css'
 
 const ICONS: Record<string, string> = {
     moreIcon
 }
 
-type ButtonDotsProps = {
-    icon: string
-}
 
-function ButtonDots({ icon }: ButtonDotsProps) {
+function ButtonDots() {
     return (
-        <div className='ButtonDots'>
-            <img className='ButtonDots__icon' src={ICONS[moreIcon] || moreIcon} alt={moreIcon} />
+        <div className={styles.container}>
+            <img className={styles.container__img} src={ICONS[moreIcon] || moreIcon} alt={moreIcon} />
         </div>
     )
 }
