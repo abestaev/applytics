@@ -2,7 +2,7 @@
     display: grid;
     padding: 0.5em 1em;
     grid-template-columns: auto 4fr 1fr 1fr 1fr 1fr;
-    row-gap: 1em;
+    row-gap: 1rem;
 }
 
 .dataline:hover {
@@ -21,20 +21,31 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-size: 0.95em;
-    color: var(--text-color-800);
+    font-size: var(--text-sm);
+    color: var(--text-color-700)
 }
+
+.checkbox {
+    height: 100%;
+    width: 100%;
+    padding-right: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 
 .dataline__percent {
     display: flex;
     align-items: center;
-    gap: 1em;
+    gap: 1rem;
 }
 
 .dataline__bar {
     position: relative;
     background-color: var(--bg-percent-1);
-    height: 0.5em;
+    /*height: (0.5em;)*/
+    height: 30%;
     flex: 4;
     border-radius: 1em;
 }
@@ -49,8 +60,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 0.95em;
-    color: var(--text-color-800)
+    font-size: var(--text-xs);
 }
 
 .dataline__extend {
@@ -62,4 +72,31 @@
 .dataline__extend-text {
     overflow: hidden;
     width: 100%;
+}
+
+
+@media (max-width: 900px) {
+    .dataline {
+        grid-template-columns: auto 2fr 1fr 1fr 1fr 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+
+    .dataline {
+        padding: 0.5rem;
+        grid-template-columns: auto 1fr 1fr 1fr 1fr 1fr;
+        gap: 0.1rem
+    }
+
+    .checkbox {
+        padding-right: 0.5rem;
+    }
+
+    .dataline__percent {
+        gap: 0.8rem;
+    }
+    .dataline__bar-fill {
+        border-radius: 0.5rem;
+    }
 }

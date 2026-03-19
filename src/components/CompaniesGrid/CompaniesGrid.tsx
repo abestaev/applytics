@@ -15,10 +15,9 @@ function CompaniesGrid({ applications }: CompaniesGridType) {
 
     return (
         <div className={styles.container} >
-            <div
-                className={styles.grid__row}
-            >
-                <div style={{ marginRight: '1em' }}>
+
+            <div className={styles.grid__row} >
+                <div className={styles.checkbox}>
                     <input type="checkbox" />
                 </div>
                 <div>
@@ -37,17 +36,26 @@ function CompaniesGrid({ applications }: CompaniesGridType) {
                     <Field placeholder="% of total" />
                 </div>
             </div>
+
             <div className={`${styles.container__apps} scrollable`}>
                 {
-                    applications?.map((a: Application, i: number) =>
-                        <DataLine
-                            key={a.id}
-                            index={i}
-                            application={a}
-                            applications={applications}
-                            percentTotal={Math.round(applications.filter(e => e.company === a.company).length / applications.length * 100)}
-                        />
-                    )
+                    applications.length === 0 ?
+                        <div
+                            className={styles.nodata}
+                        >
+                            <p className={styles.nodata__text}>No data !</p>
+                            <p className={styles.nodata__reco}>Verify that your file respect the desired csv format</p>
+                        </div>
+                        :
+                        applications?.map((a: Application, i: number) =>
+                            <DataLine
+                                key={a.id}
+                                index={i}
+                                application={a}
+                                applications={applications}
+                                percentTotal={Math.round(applications.filter(e => e.company === a.company).length / applications.length * 100)}
+                            />
+                        )
                 }
             </div>
         </div>

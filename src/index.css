@@ -1,7 +1,5 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+
 
   background-color: #ffffff;
 
@@ -17,70 +15,91 @@
   --bg-black-1: rgba(0, 0, 0, 0.008);
   --bg-black-2: rgba(0, 0, 0, 0.02);
 
-  
-  --bg-percent-1: rgba(165, 47, 47, 0.08);
-  --bg-percent-2: #b6d0ff;
+
+
 
   --bg-red-1: rgb(255, 218, 229, 0.1);
 
   --btn-color-hover: 1px solid rgba(0, 0, 0, 0.08);
 
-  
+
+  /* Text */
+
+  --text-xs: clamp(0.75rem, 0.8vw, 0.85rem);
+  --text-sm: clamp(0.85rem, 1vw, 1rem);
+  --text-md: clamp(1rem, 1.2vw, 1.25rem);
+  --text-lg: clamp(1.25rem, 1.8vw, 1.75rem);
+  --text-xl: clamp(1.7rem, 2.7vw, 3.2rem);
+  --text-xxl: clamp(2rem, 3.1vw, 3.5rem);
 
   --text-color-900: rgba(0, 0, 0, 0.9);
   --text-color-800: rgba(0, 0, 0, 0.8);
   --text-color-700: rgba(0, 0, 0, 0.7);
   --text-color-600: rgba(0, 0, 0, 0.6);
+  --text-color-500: rgba(0, 0, 0, 0.5);
+  --text-color-400: rgba(0, 0, 0, 0.4);
+  --text-color-300: rgba(0, 0, 0, 0.4);
+  --text-color-200: rgba(0, 0, 0, 0.2);
 
-  
+  color: var(--text-color-800);
+
+
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  font-size: var(--text-sm);
+
+  /* Graph Colors (check main.tsx)*/
+
   --gcolor-green-1: #207900;
   --gcolor-green-2: #aaff8b;
-
   --gcolor-red-1: #B20041;
   --gcolor-red-2: #ff7e9a;
-
   --gcolor-red-1: #0043BF;
   --gcolor-red-2: #83aeff;
 
+  /* Percent color (check main.tsx*/
+  --bg-percent-1: #a52f2f14;
+  --bg-percent-2: #b6d0ff;
+
+
 }
+
+html,
+#root,
+body {
+  padding: 0;
+  margin: 0;
+}
+
 
 p,
 button,
 h1,
 h2,
-div {
+div, 
+label {
   margin: 0;
   padding: 0;
-  color: var(--text-color-800);
+  font-weight: 400;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  min-width: 320px;
-  min-height: 100vh;
-}
 
 h1 {
-  font-size: 3.2em;
+  font-size: 3.2rem;
   line-height: 1.1;
 }
 
-h1,
-h2,
+h2 {
+  font-size: var(--text-lg);
+  color: var(--text-color-700);
+
+}
+
 h3 {
-  margin: 0;
-  padding: 0;
+  font-size: var(--text-md);
+  color: var(--text-color-700);
+
 }
 
 button,
@@ -88,8 +107,7 @@ label {
   border-radius: 8px;
   border: var(--border);
   padding: 0.5em 0.5em;
-  font-size: 1em;
-  font-weight: 500;
+  font-size: var(--text-sm);
   font-family: inherit;
   background-color: white;
   border-color: #00000034;
@@ -101,6 +119,7 @@ label {
   justify-content: center;
   align-items: center;
   gap: 0.5em;
+  color: var(--text-color-700)
 }
 
 button:hover,
@@ -122,6 +141,13 @@ button>img {
   -webkit-backdrop-filter: blur(30px);
 }
 
+* {
+  box-sizing: border-box;
+}
+
+/* * {
+  outline: 1px solid red;
+} */
 
 td,
 th {
@@ -164,3 +190,13 @@ th {
     background-color: #f9f9f9;
   }
 }
+
+@media (max-width: 700px) {}
+
+/* mobile */
+@media (max-width: 900px) {}
+
+/* tablet */
+@media (max-width: 1200px) {}
+
+/* desktop */

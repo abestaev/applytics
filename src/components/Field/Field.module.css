@@ -1,4 +1,6 @@
 .container {
+    height: 100%;
+    width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -8,6 +10,6 @@
 
 .container__text {
     color: var(--text-color-6);
-    font-size: 0.9em;
+    font-size: var(--text-xs);
 }
 

@@ -52,14 +52,20 @@ function UploadContainer({ setAppState }: UploadContainerProps) {
             setUploadError("Oops ! Your document is to big. Pick a smaller one (<1Mb)")
             return
         }
+        if (file.size === 0) {
+            setUploadError("Hum ... no ! Empty csv file not allowed")
+            return
+        }
+
         setLoading(true)
 
         Papa.parse(file, {
             header: true,
             complete: (e: any) => {
                 setLoading(false)
-                const d = cleanDatas(e.data)
-                setAppState(d.map((e: any, i: number) => normalizeDatas(e, i)))
+                const cleaned = cleanDatas(e.data)
+                const final = cleaned.map((e: any, i: number) => normalizeDatas(e, i))
+                setAppState(final)
             }
         })
     }

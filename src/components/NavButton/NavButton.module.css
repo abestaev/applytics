@@ -3,6 +3,7 @@
     justify-content: center;
     border: var(--border);
     border-radius: 0.2em;
+    flex-grow: 0;
 }
 
 
@@ -12,9 +13,19 @@
     border: 0px;
     border-radius: 0px;
     cursor: pointer;
-    font-size: 0.9em;
+    font-size: var(--text-xs);
+    color: var(--text-color-700)
 }
 
 .button:hover {
     background-color: var(--button-highlight)
+}
+
+@media (max-width: 600px) {
+    .button {
+        padding: 0rem 0.5rem;
+        font-size: var(--text-xs);
+    }
+
+
 }

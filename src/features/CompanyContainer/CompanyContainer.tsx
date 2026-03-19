@@ -20,8 +20,7 @@ function CompanyContainer({ speciality, applications }: CompanyContainerProps) {
     const [searchInput, setSearchInput] = useState<string>("")
 
     useEffect(() => {
-        if (applications && applications.length)
-            setCurrentApplications(applications)
+        setCurrentApplications(applications)
     }, [applications])
 
     useEffect(() => {
@@ -40,11 +39,10 @@ function CompanyContainer({ speciality, applications }: CompanyContainerProps) {
         }
     }
 
-
     return (
         <div className={`${styles.container} blur`}>
 
-            <h2 className={styles.title}>Companies</h2>
+            <h3 className={styles.title}>Companies</h3>
             <div className={styles.row}>
                 <div className={styles.row__navbutton} >
                     <NavButton />
@@ -58,9 +56,10 @@ function CompanyContainer({ speciality, applications }: CompanyContainerProps) {
                 </div>
             </div>
 
-            <CompaniesGrid
-                applications={currentApplications || []}
-            />
+                    <CompaniesGrid
+                        applications={currentApplications || []}
+                    />
+            
 
         </div>
     )

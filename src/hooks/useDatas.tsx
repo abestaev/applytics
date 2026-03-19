@@ -29,7 +29,7 @@ export const useDatas = (data: ApplicationState) => {
 
     const currentApplications = useMemo(
         () => sortAppsByDate(data.filter(e => e.speciality === speciality), true),
-        [speciality]
+        [speciality, data]
     )
 
     return {

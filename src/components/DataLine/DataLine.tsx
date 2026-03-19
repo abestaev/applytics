@@ -21,7 +21,7 @@ function DataLine({ index, application, percentTotal }: DataLineProps) {
 
     useEffect(() => {
         if (percentDivRef && percentDivRef.current) {
-            setWidth(percentDivRef.current?.offsetWidth)
+            setWidth(Math.round(percentDivRef.current?.offsetWidth))
         }
     }, [percentDivRef])
 
@@ -42,7 +42,7 @@ function DataLine({ index, application, percentTotal }: DataLineProps) {
                     borderTop: index === 0 ? 'none' : 'var(--border)'
                 }}
             >
-                <div className={styles.dataline__cell} style={{ marginRight: '1em' }}>
+                <div className={styles.checkbox} >
                     <input type="checkbox" />
                 </div>
 

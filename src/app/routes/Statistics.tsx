@@ -15,6 +15,7 @@ import CompanyContainer from "@/features/CompanyContainer/CompanyContainer"
 import UploadContainer from '@/components/UploadContainer/UploadContainer'
 
 import styles from '@/app/routes/Statistics.module.css'
+import { graphColors } from "@/main"
 
 const StatisticsPage = () => {
 
@@ -24,17 +25,18 @@ const StatisticsPage = () => {
 
     return (
         <div className={styles.statistics}>
-            <div className={styles.container} style={{ position: 'relative' }}>
-                
-                <img src={pinkVector} style={{ position: 'absolute', top: 0, left: 0, height: '30em', zIndex: -1 }} />
-                <img src={greenVector} style={{ position: 'absolute', left: 0, right: 0, zIndex: -1, }} />
-                <img src={blueVector} style={{ position: 'absolute', right: 0, top: 0 }} />
+            <div style={{position: 'relative', width: '100%'}}>
 
+                <img src={pinkVector} style={{ position: 'absolute', top: 0, left: 0, zIndex: -1, width: '60%' }} />
+                <img src={greenVector} style={{ position: 'absolute', left: 0, right: 0, zIndex: -1, width: '100%' }} />
+                <img src={blueVector} style={{ position: 'absolute', right: 0, top: 0, zIndex: -1, width: '35%' }} />
+               
+            </div>
                 <div className={styles.header} >
 
                     <div className={styles.header__title}>
-                        <h1 style={{fontWeight: '300'}}>Resume your Internships</h1>
-                        <h1 style={{fontWeight: '500'}}>Applications</h1>
+                        <h1 className={styles.header__resume} >Resume your Internships</h1>
+                        <h1 className={styles.header__applications}>Applications</h1>
                     </div>
 
                     <p className={styles.header__text}>Keep tracks of your applications from a simple interface</p>
@@ -47,7 +49,7 @@ const StatisticsPage = () => {
                 <div className={styles.body}>
 
                     <div className={styles.body__title}>
-                        <h2 style={{ fontWeight: 400, fontSize: '2em' }}>Summarize </h2>
+                        <h2>Summarize </h2>
                     </div>
 
                     <NavLine
@@ -62,24 +64,24 @@ const StatisticsPage = () => {
                             placeholder="Total resumes sents"
                             result={graphState?.totalResumesSent}
                             monthProgression={20}
-                            lineColor="#207900"
-                            color="#aaff8b"
+                            lineColor={graphColors.total[0]}
+                            color={graphColors.total[1]}
                         />
                         <GraphBox
                             data={graphState?.graphDatas[1] || []}
                             placeholder="Total responses recieved"
                             result={graphState?.totalResponsesRecieved}
                             monthProgression={70}
-                            lineColor="#B20041"
-                            color="#ff7e9a"
+                            lineColor={graphColors.responses[0]}
+                            color={graphColors.responses[1]}
                         />
                         <GraphBox
                             data={graphState?.graphDatas[2] || []}
                             placeholder="Total interviews"
                             result={graphState?.totalInterviews}
                             monthProgression={50}
-                            lineColor="#0043BF"
-                            color="#83aeff"
+                            lineColor={graphColors.interviews[0]}
+                            color={graphColors.interviews[1]}
                         />
                     </div>
 
@@ -88,7 +90,6 @@ const StatisticsPage = () => {
                         applications={currentApplications}
                     />
                 </div >
-            </div >
         </div >
     )
 }
