@@ -44,7 +44,7 @@ function CompaniesGrid({ applications }: CompaniesGridType) {
                             className={styles.nodata}
                         >
                             <p className={styles.nodata__text}>No data !</p>
-                            <p className={styles.nodata__reco}>Verify that your file respect the desired csv format</p>
+                            <p className={styles.nodata__reco}>Verify that the file respect the desired csv format (more <a href='https://github.com/mtellal/Applytics' target="_blank">here</a>)</p>
                         </div>
                         :
                         applications?.map((a: Application, i: number) =>

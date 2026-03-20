@@ -11,7 +11,7 @@ import blueVector from '@/assets/blueVector.svg'
 import { useDatas } from "../../hooks/useDatas"
 import type { ApplicationState } from "../../types/applications"
 
-import CompanyContainer from "@/features/CompanyContainer/CompanyContainer"
+import CompanyContainer from "@/components/CompanyContainer/CompanyContainer"
 import UploadContainer from '@/components/UploadContainer/UploadContainer'
 
 import styles from '@/app/routes/Statistics.module.css'

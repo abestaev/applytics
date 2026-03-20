@@ -134,20 +134,6 @@
 }
 
 
-/*
-.body {
-    flex: 5;
-    padding-top: 5vh;
-    padding-bottom: 3vh;
-    display: flex;
-    flex-direction: column;
-    gap: 1em;
-    max-width: 1500px;
-    width: clamp(600px, 70vw, 1500px);
-}
-*/
-
-
 
 @media (max-width:650px) {
     .body {

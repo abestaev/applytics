@@ -1,73 +1,108 @@
-# React + TypeScript + Vite
+# ✨ 𝗔𝗽𝗽𝗹𝘆𝘁𝗶𝗰𝘀
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> **Resume your internships applications**
+> Keep track of your applications from a simple and clean interface.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 📌 About the project
 
-## React Compiler
+**Applytics** is a web application designed to help students **centralize and manage their internship applications** in a much more intuitive and enjoyable way than traditional spreadsheets.
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+Instead of juggling between Excel or Google Sheets, Applytics provides:
 
-## Expanding the ESLint configuration
+* 📊 A **clear and structured interface**
+* 📈 Basic **statistics to track your progress**
+* 🧭 A better **overview of your application journey**
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+This project was also an opportunity to **get back into front-end development with React**, while building something genuinely useful for managing real-life internship applications.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 🚀 Getting Started
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/mtellal/Applytics
+cd Applytics
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### 2. Install dependencies
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
+
+---
+
+### 3. Run the project
+
+```bash
+npm run dev
+```
+
+The project is built using:
+
+* ⚛️ React
+* ⚡ Vite
+
+---
+
+## 📂 How to use
+
+1. Export your applications from Google Sheets:
+
+   * Go to **File > Download > Comma-separated values (.csv)**
+
+2. Upload your `.csv` file into Applytics
+
+3. Visualize and manage your applications in a clean dashboard 🎯
+
+---
+
+## 🎥 Screenshots / Demo
+
+> *(Add your screenshots or demo video here)*
+
+```
+![Dashboard Preview](./screenshots/demo.webm)
+```
+
+---
+
+## 🎯 Project Goals
+
+* Practice and improve **React development**
+* Build a **useful and real-world tool**
+* Transform a boring tracking process into a **pleasant experience**
+
+---
+
+## 🛠️ Tech Stack
+
+* React
+* Vite
+* CSS Modules
+
+---
+
+## 📄 License
+
+This project is open-source and available under the MIT License.
+
+---
+
+## 🙌 Acknowledgements
+
+Built to make internship tracking **simpler, cleaner, and actually enjoyable**.
+
+
+Je souhaite rediger un readme de mon application nomme Applytics. Voici le texte que j'ai mis dans le titre de mon application Resume your Internships Applications Keep tracks of your applications from a simple interface Let's start by uploading your Google Sheet document ! Go on the google sheet page and click on File > Download > Values separeted ... (.csv) or import your own csv file Je souhaite que tu me genere un README.md comprenant:
+- Un titre Applytics avec une font specifique par exemple ou mis en avant
+- Un petite description du projet. Pour te resumer le projet l'objectif et centraliser les demandes de candidatures effectue par un etudiant dans une jolie interface, bien ordonne et avec quelques statistics mais egalement de tenire le compte, car ce n'est pas forcement agreable dans un tableau excel ou google sheet. 
+- Soit une section a part, soit compris dans la petite description, mais l'objectif de ce projet etait de reprendre le developpement front avec react et d'allier l'utile a l'agreable en reprenant mes candidatures dans une belle interface. 
+- Comment l'utiliser, quelques instructions comme par exemple la copie du repo 'https://github.com/mtellal/Applytics', son lancement avec `npm run dev`, c'est un projet qui a ete realise sous `vite` et react init classique 
+- Une section photos que ou video, je prendrai moi meme la video ou photo 
