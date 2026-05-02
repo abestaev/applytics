@@ -28,3 +28,8 @@ csv/*
 
 # todos file
 todos.txt
+
+# env
+.env.local
+.env*.local
+.mcp.json

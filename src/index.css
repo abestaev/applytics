@@ -1,202 +1,57 @@
 :root {
+  --mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --sans: 'Inter', system-ui, sans-serif;
+  --display: 'Inter', system-ui, sans-serif;
+}
 
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-  background-color: #ffffff;
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+}
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
+body {
+  font-family: var(--sans);
+  background: #08090b;
+  color: #e8e9ec;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  --border: 1px solid rgba(0, 0, 0, 0.1);
-  --button-highlight: rgba(0, 0, 0, 0.02);
-
-
-  --bg-black-1: rgba(0, 0, 0, 0.008);
-  --bg-black-2: rgba(0, 0, 0, 0.02);
-
-
-
-
-  --bg-red-1: rgb(255, 218, 229, 0.1);
-
-  --btn-color-hover: 1px solid rgba(0, 0, 0, 0.08);
-
-
-  /* Text */
-
-  --text-xs: clamp(0.75rem, 0.8vw, 0.85rem);
-  --text-sm: clamp(0.85rem, 1vw, 1rem);
-  --text-md: clamp(1rem, 1.2vw, 1.25rem);
-  --text-lg: clamp(1.25rem, 1.8vw, 1.75rem);
-  --text-xl: clamp(1.7rem, 2.7vw, 3.2rem);
-  --text-xxl: clamp(2rem, 3.1vw, 3.5rem);
-
-  --text-color-900: rgba(0, 0, 0, 0.9);
-  --text-color-800: rgba(0, 0, 0, 0.8);
-  --text-color-700: rgba(0, 0, 0, 0.7);
-  --text-color-600: rgba(0, 0, 0, 0.6);
-  --text-color-500: rgba(0, 0, 0, 0.5);
-  --text-color-400: rgba(0, 0, 0, 0.4);
-  --text-color-300: rgba(0, 0, 0, 0.4);
-  --text-color-200: rgba(0, 0, 0, 0.2);
-
-  color: var(--text-color-800);
-
-
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  font-size: var(--text-sm);
-
-  /* Graph Colors (check main.tsx)*/
-
-  --gcolor-green-1: #207900;
-  --gcolor-green-2: #aaff8b;
-  --gcolor-red-1: #B20041;
-  --gcolor-red-2: #ff7e9a;
-  --gcolor-red-1: #0043BF;
-  --gcolor-red-2: #83aeff;
-
-  /* Percent color (check main.tsx*/
-  --bg-percent-1: #a52f2f14;
-  --bg-percent-2: #b6d0ff;
-
-
 }
 
-html,
-#root,
-body {
-  padding: 0;
-  margin: 0;
-}
-
-
-p,
-button,
-h1,
-h2,
-div, 
-label {
-  margin: 0;
-  padding: 0;
-  font-weight: 400;
-}
-
-
-h1 {
-  font-size: 3.2rem;
-  line-height: 1.1;
-}
-
-h2 {
-  font-size: var(--text-lg);
-  color: var(--text-color-700);
-
-}
-
-h3 {
-  font-size: var(--text-md);
-  color: var(--text-color-700);
-
-}
-
-button,
-label {
-  border-radius: 8px;
-  border: var(--border);
-  padding: 0.5em 0.5em;
-  font-size: var(--text-sm);
+button {
   font-family: inherit;
-  background-color: white;
-  border-color: #00000034;
-  cursor: pointer;
-  transition: border-color 0.25s;
-
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5em;
-  color: var(--text-color-700)
 }
 
-button:hover,
-label:hover {
-  border-color: #e6e6e6;
+input {
+  font-family: inherit;
 }
 
-button:active,
-label:active {
-  background-color: rgb(247, 247, 247);
-}
-
-button>img {
-  height: 1.5em;
-}
-
-.blur {
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
-}
-
-* {
-  box-sizing: border-box;
-}
-
-/* * {
-  outline: 1px solid red;
-} */
-
-td,
-th {
+td, th {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.scrollable {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
 }
 
-.scrollable::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+::-webkit-scrollbar-thumb {
+  background: #262a33;
+  border-radius: 2px;
 }
 
-.scrollable::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 10px;
-}
-
-.scrollable::-webkit-scrollbar-track {
+::-webkit-scrollbar-track {
   background: transparent;
 }
 
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-
-  a:hover {
-    color: #747bff;
-  }
-
-  button {
-    background-color: #f9f9f9;
-  }
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #262a33 transparent;
 }
-
-@media (max-width: 700px) {}
-
-/* mobile */
-@media (max-width: 900px) {}
-
-/* tablet */
-@media (max-width: 1200px) {}
-
-/* desktop */
