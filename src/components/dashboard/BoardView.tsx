@@ -73,11 +73,12 @@ function DraggableCard({ app, activeId }: { app: Application; activeId: string |
 // ── Column (droppable) ───────────────────────────────────────────────────────
 
 function Column({
-  status, apps, activeId,
+  status, apps, activeId, onAdd,
 }: {
   status: StatusType;
   apps: Application[];
   activeId: string | null;
+  onAdd: (status: StatusType) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: status });
   const m = STATUS_META[status];
@@ -117,7 +118,7 @@ function Column({
         {apps.map(a => (
           <DraggableCard key={a.id} app={a} activeId={activeId} />
         ))}
-        <button style={{
+        <button onClick={() => onAdd(status)} style={{
           background: 'transparent',
           border: `1px dashed ${T.br1}`,
           padding: '8px', color: T.fg3,
@@ -132,9 +133,10 @@ function Column({
 
 // ── Board ────────────────────────────────────────────────────────────────────
 
-export function BoardView({ apps: initialApps, onStatusChange }: {
+export function BoardView({ apps: initialApps, onStatusChange, onAdd }: {
   apps: Application[];
   onStatusChange: (id: string, status: StatusType) => Promise<void>;
+  onAdd: (status: StatusType) => void;
 }) {
   const [apps, setApps] = useState<Application[]>(initialApps);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -175,8 +177,9 @@ export function BoardView({ apps: initialApps, onStatusChange }: {
           <Column
             key={s}
             status={s}
-            apps={apps.filter(a => a.status === s)}
+            apps={apps.filter(a => a.status === s).sort((a, b) => a.priority - b.priority)}
             activeId={activeId}
+            onAdd={onAdd}
           />
         ))}
 
@@ -203,7 +206,7 @@ export function BoardView({ apps: initialApps, onStatusChange }: {
       <DragOverlay dropAnimation={null}>
         {activeApp && (
           <div style={{
-            width: 240, transform: 'rotate(2deg)',
+            width: 240,
             boxShadow: `0 16px 40px rgba(0,0,0,.5), 0 0 0 1px ${T.accent}40`,
             cursor: 'grabbing',
           }}>

@@ -16,6 +16,7 @@ export interface Application {
   priority: number;
   link: string;
   notes: string;
+  sentAt?: string;
 }
 
 export interface Stats {

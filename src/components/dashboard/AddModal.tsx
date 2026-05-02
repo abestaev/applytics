@@ -11,6 +11,7 @@ interface AddModalProps {
   onAdd: (values: NewApplication) => Promise<void>;
   onUpdate: (id: string, patch: Partial<Omit<Application, 'id' | 'sentDays' | 'lastDays'>>) => Promise<void>;
   totalApps: number;
+  initialStatus?: StatusType;
   editApp?: Application;
 }
 
@@ -26,13 +27,18 @@ interface FormState {
   priority: number;
   link: string;
   notes: string;
+  sentAt: string;
 }
 
 const INITIAL: FormState = {
   company: '', role: '', source: 'LinkedIn', loc: 'Paris',
   remote: 'Hybrid', salary: '', contact: '', status: 'draft',
-  priority: 3, link: '', notes: '',
+  priority: 3, link: '', notes: '', sentAt: '',
 };
+
+function initialForm(status: StatusType = 'draft'): FormState {
+  return { ...INITIAL, status };
+}
 
 function appToForm(app: Application): FormState {
   return {
@@ -40,6 +46,7 @@ function appToForm(app: Application): FormState {
     loc: app.loc, remote: app.remote, salary: app.salary,
     contact: app.contact, status: app.status,
     priority: app.priority, link: app.link, notes: app.notes,
+    sentAt: app.sentAt ? app.sentAt.slice(0, 10) : '',
   };
 }
 
@@ -162,19 +169,19 @@ function SelectField<V extends string | number>({ label, value, onChange, option
   );
 }
 
-export function AddModal({ open, onClose, onAdd, onUpdate, totalApps, editApp }: AddModalProps) {
+export function AddModal({ open, onClose, onAdd, onUpdate, totalApps, initialStatus = 'draft', editApp }: AddModalProps) {
   const isEdit = !!editApp;
-  const [form, setForm]   = useState<FormState>(isEdit ? appToForm(editApp) : INITIAL);
+  const [form, setForm]   = useState<FormState>(isEdit ? appToForm(editApp) : initialForm(initialStatus));
   const [saving, setSaving] = useState(false);
   const [error, setError]   = useState<string | null>(null);
 
   // Reset form when modal opens
   useEffect(() => {
     if (open) {
-      setForm(editApp ? appToForm(editApp) : INITIAL);
+      setForm(editApp ? appToForm(editApp) : initialForm(initialStatus));
       setError(null);
     }
-  }, [open, editApp]);
+  }, [open, editApp, initialStatus]);
 
   useEffect(() => {
     if (!open) return;
@@ -192,11 +199,16 @@ export function AddModal({ open, onClose, onAdd, onUpdate, totalApps, editApp }:
     setError(null);
     try {
       if (isEdit) {
-        await onUpdate(editApp.id, form);
+        await onUpdate(editApp.id, {
+          ...form,
+          sentAt: form.sentAt ? new Date(form.sentAt).toISOString() : undefined,
+        });
       } else {
         await onAdd({
           ...form,
-          sentAt: form.status !== 'draft' ? new Date().toISOString() : undefined,
+          sentAt: form.sentAt
+            ? new Date(form.sentAt).toISOString()
+            : form.status !== 'draft' ? new Date().toISOString() : undefined,
         });
       }
       onClose();
@@ -252,6 +264,15 @@ export function AddModal({ open, onClose, onAdd, onUpdate, totalApps, editApp }:
           <Field label="SALARY"   value={form.salary}  onChange={v => set('salary', v)}   placeholder="1400€/mo" />
           <SelectField label="STATUS"   value={form.status}   onChange={v => set('status', v as StatusType)}
             options={STATUS_ORDER.map(s => ({ value: s, label: STATUS_META[s].label }))} />
+          <div>
+            <FieldLabel>SENT DATE</FieldLabel>
+            <input type="date" value={form.sentAt} onChange={e => set('sentAt', e.target.value)} style={{
+              width: '100%', background: T.bg0, border: `1px solid ${T.br1}`,
+              color: form.sentAt ? T.fg0 : T.fg3, fontFamily: 'var(--mono)', fontSize: 11,
+              padding: '6px 9px', outline: 'none', height: 28,
+              colorScheme: 'dark',
+            }} />
+          </div>
           <SelectField label="PRIORITY" value={form.priority} onChange={v => set('priority', v)}
             options={[
               { value: 1, label: 'P1 · top' }, { value: 2, label: 'P2 · high' },

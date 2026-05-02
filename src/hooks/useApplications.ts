@@ -23,6 +23,7 @@ function rowToApp(row: Record<string, unknown>): Application {
     priority:  row.priority as number,
     link:      row.link as string,
     notes:     row.notes as string,
+    sentAt:    row.sent_at as string | undefined,
   };
 }
 
@@ -79,8 +80,11 @@ export function useApplications() {
     if ('sentDays' in dbPatch) delete dbPatch.sentDays;
     if ('lastDays' in dbPatch) delete dbPatch.lastDays;
 
-    // Si le statut quitte draft et que sent_at est null, on le set maintenant
-    if (patch.status && patch.status !== 'draft') {
+    // Sent date: explicit value takes priority, otherwise auto-set when leaving draft
+    if ('sentAt' in dbPatch) {
+      dbPatch.sent_at = dbPatch.sentAt || null;
+      delete dbPatch.sentAt;
+    } else if (patch.status && patch.status !== 'draft') {
       const current = apps.find(a => a.id === id);
       if (current && current.sentDays === 0) {
         dbPatch.sent_at = new Date().toISOString();

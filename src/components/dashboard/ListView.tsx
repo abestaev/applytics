@@ -59,14 +59,30 @@ function DetailPanel({ app, onEdit, onDelete }: {
           ['LOCATION',   `${app.loc} · ${app.remote}`],
           ['SALARY',     app.salary],
           ['CONTACT',    app.contact],
+          ['SENT',       app.sentDays === 0 ? '—' : `${app.sentDays}d ago`],
           ['LAST EVENT', app.lastDays === 0 ? 'today' : `${app.lastDays}d ago`],
-          ['LINK',       app.link],
         ] as [string, string][]).map(([k, v]) => (
           <Fragment key={k}>
             <span style={{ color: T.fg3, letterSpacing: '0.08em', fontSize: 9.5, alignSelf: 'center' }}>{k}</span>
             <span style={{ color: T.fg0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v || '—'}</span>
           </Fragment>
         ))}
+        <span style={{ color: T.fg3, letterSpacing: '0.08em', fontSize: 9.5, alignSelf: 'center' }}>LINK</span>
+        {app.link ? (
+          <a
+            href={app.link.startsWith('http') ? app.link : `https://${app.link}`}
+            target="_blank" rel="noopener noreferrer"
+            style={{
+              color: T.accent, fontFamily: 'var(--mono)', fontSize: 11,
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              textDecoration: 'none',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
+            onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}
+          >{app.link}</a>
+        ) : (
+          <span style={{ color: T.fg3 }}>—</span>
+        )}
       </div>
 
       {/* Pipeline */}
@@ -102,7 +118,6 @@ function DetailPanel({ app, onEdit, onDelete }: {
 
       {/* Actions */}
       <div style={{ padding: '12px 16px', display: 'flex', gap: 6, flexShrink: 0 }}>
-        <ToolBtn>+EVENT</ToolBtn>
         <ToolBtn onClick={() => onEdit(app)}>EDIT</ToolBtn>
         <span style={{ flex: 1 }} />
         {confirming ? (
