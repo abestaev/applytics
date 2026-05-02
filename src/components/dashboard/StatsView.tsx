@@ -60,7 +60,7 @@ export function StatsView({ apps }: { apps: Application[] }) {
                   <span>
                     <span style={{ color: T.fg0, fontSize: 14, fontWeight: 600 }}>{f.count}</span>
                     <span style={{ color: T.fg3, marginLeft: 8 }}>{pct}%</span>
-                    {dropoff > 0 && <span style={{ color: T.rejected, marginLeft: 8 }}>−{dropoff}</span>}
+                    {dropoff > 0 && f.count > 0 && <span style={{ color: T.rejected, marginLeft: 8 }}>−{dropoff}</span>}
                   </span>
                 </div>
                 <div style={{ height: 22, background: T.bg2, position: 'relative' }}>
@@ -117,7 +117,7 @@ export function StatsView({ apps }: { apps: Application[] }) {
           padding: 24, fontFamily: 'var(--mono)', fontSize: 10.5, color: T.fg3,
           letterSpacing: '0.06em',
         }}>
-          Disponible quand les candidatures auront des dates de réponse
+          Available once applications have response dates
         </div>
       </Panel>
 
@@ -128,7 +128,7 @@ export function StatsView({ apps }: { apps: Application[] }) {
           padding: 24, fontFamily: 'var(--mono)', fontSize: 10.5, color: T.fg3,
           letterSpacing: '0.06em',
         }}>
-          Disponible après quelques semaines d'activité
+          Available after a few weeks of activity
         </div>
       </Panel>
     </div>

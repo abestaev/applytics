@@ -4,159 +4,158 @@ import { T } from '@/tokens';
 
 type Mode = 'login' | 'signup';
 
+const inp = {
+  width: '100%', background: T.bg0,
+  border: `1px solid ${T.br1}`, color: T.fg0,
+  fontFamily: 'var(--mono)', fontSize: 12,
+  padding: '10px 12px', outline: 'none', height: 38,
+} as const;
+
+const lbl = {
+  fontFamily: 'var(--mono)', fontSize: 9.5,
+  color: T.fg3, letterSpacing: '0.1em',
+  display: 'block', marginBottom: 6,
+} as const;
+
 export function AuthPage() {
-  const [mode, setMode]       = useState<Mode>('login');
-  const [email, setEmail]     = useState('');
+  const [mode, setMode]         = useState<Mode>('login');
+  const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError]     = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [sent, setSent]       = useState(false);
+  const [confirm, setConfirm]   = useState('');
+  const [error, setError]       = useState<string | null>(null);
+  const [loading, setLoading]   = useState(false);
+
+  const switchMode = (m: Mode) => {
+    setMode(m); setError(null); setConfirm('');
+  };
 
   const submit = async () => {
     setError(null);
+    if (mode === 'signup' && password !== confirm) {
+      setError('Passwords do not match.');
+      return;
+    }
+    if (mode === 'signup' && password.length < 6) {
+      setError('Password must be at least 6 characters.');
+      return;
+    }
     setLoading(true);
     try {
       if (mode === 'signup') {
         const { error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
-        setSent(true);
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       }
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Une erreur est survenue');
+      setError(e instanceof Error ? e.message : 'An error occurred.');
     } finally {
       setLoading(false);
     }
   };
 
-  const inputStyle = {
-    width: '100%', background: T.bg0,
-    border: `1px solid ${T.br1}`, color: T.fg0,
-    fontFamily: 'var(--mono)', fontSize: 12,
-    padding: '8px 10px', outline: 'none', height: 34,
-  } as const;
-
-  const labelStyle = {
-    fontFamily: 'var(--mono)', fontSize: 9.5,
-    color: T.fg3, letterSpacing: '0.1em',
-    display: 'block', marginBottom: 5,
-  } as const;
-
-  if (sent) {
-    return (
-      <div style={{
-        height: '100vh', display: 'flex',
-        alignItems: 'center', justifyContent: 'center',
-        background: T.bg0,
-      }}>
-        <div style={{ textAlign: 'center', fontFamily: 'var(--mono)' }}>
-          <div style={{ fontSize: 13, color: T.fg0, marginBottom: 8 }}>Vérifie tes emails</div>
-          <div style={{ fontSize: 11, color: T.fg2 }}>Un lien de confirmation t'a été envoyé à <span style={{ color: T.accent }}>{email}</span></div>
-        </div>
-      </div>
-    );
-  }
+  const canSubmit = !loading && !!email && !!password && (mode === 'login' || !!confirm);
 
   return (
     <div style={{
-      height: '100vh', display: 'flex',
+      height: '100vh', display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
       background: T.bg0,
     }}>
+      {/* Logo */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 32 }}>
+        <span style={{
+          width: 28, height: 28, background: T.accent,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: '#0a0b0d', fontSize: 16, fontWeight: 800, fontFamily: 'var(--mono)',
+        }}>A</span>
+        <span style={{ fontFamily: 'var(--display)', fontWeight: 700, fontSize: 22, color: T.fg0, letterSpacing: '-0.02em' }}>
+          Applytics
+        </span>
+      </div>
+
+      {/* Card */}
       <div style={{
-        width: 360, background: T.bg1,
+        width: 400, background: T.bg1,
         border: `1px solid ${T.br1}`,
-        boxShadow: '0 20px 60px rgba(0,0,0,.4)',
+        boxShadow: '0 24px 64px rgba(0,0,0,.5)',
       }}>
-        {/* Header */}
-        <div style={{
-          padding: '14px 18px', borderBottom: `1px solid ${T.br0}`,
-          display: 'flex', alignItems: 'center', gap: 10,
-        }}>
-          <span style={{
-            width: 18, height: 18, background: T.accent,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#0a0b0d', fontSize: 11, fontWeight: 800, fontFamily: 'var(--mono)',
-            flexShrink: 0,
-          }}>A</span>
-          <span style={{
-            fontFamily: 'var(--display)', fontWeight: 600, fontSize: 14,
-            color: T.fg0, letterSpacing: '-0.01em',
-          }}>Applytics</span>
-          <span style={{ flex: 1 }} />
-          <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: T.fg3 }}>
-            {mode === 'login' ? 'CONNEXION' : 'INSCRIPTION'}
-          </span>
+        {/* Tabs */}
+        <div style={{ display: 'flex', borderBottom: `1px solid ${T.br0}` }}>
+          {(['login', 'signup'] as Mode[]).map(m => (
+            <button key={m} onClick={() => switchMode(m)} style={{
+              flex: 1, padding: '13px 0',
+              background: mode === m ? T.bg1 : T.bg2,
+              border: 'none',
+              borderBottom: mode === m ? `2px solid ${T.accent}` : `2px solid transparent`,
+              color: mode === m ? T.fg0 : T.fg2,
+              fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 600,
+              letterSpacing: '0.1em', textTransform: 'uppercase',
+              cursor: 'pointer',
+            }}>
+              {m === 'login' ? 'Sign in' : 'Create account'}
+            </button>
+          ))}
         </div>
 
         {/* Form */}
-        <div style={{ padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
-            <label style={labelStyle}>EMAIL</label>
-            <input
-              type="email" value={email}
-              onChange={e => setEmail(e.target.value)}
+            <label style={lbl}>EMAIL</label>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && submit()}
-              placeholder="toi@example.com"
-              style={inputStyle}
-              autoFocus
-            />
+              placeholder="you@example.com" style={inp} autoFocus />
           </div>
+
           <div>
-            <label style={labelStyle}>MOT DE PASSE</label>
-            <input
-              type="password" value={password}
-              onChange={e => setPassword(e.target.value)}
+            <label style={lbl}>PASSWORD</label>
+            <input type="password" value={password} onChange={e => setPassword(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && submit()}
-              placeholder="••••••••"
-              style={inputStyle}
-            />
+              placeholder="••••••••" style={inp} />
           </div>
+
+          {mode === 'signup' && (
+            <div>
+              <label style={lbl}>CONFIRM PASSWORD</label>
+              <input type="password" value={confirm} onChange={e => setConfirm(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && submit()}
+                placeholder="••••••••"
+                style={{
+                  ...inp,
+                  borderColor: confirm && confirm !== password ? T.rejected : T.br1,
+                }} />
+              {confirm && confirm !== password && (
+                <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: T.rejected, marginTop: 5 }}>
+                  Passwords do not match
+                </div>
+              )}
+            </div>
+          )}
 
           {error && (
             <div style={{
-              fontFamily: 'var(--mono)', fontSize: 10.5,
-              color: T.rejected, padding: '8px 10px',
-              background: `${T.rejected}12`, border: `1px solid ${T.rejected}30`,
+              fontFamily: 'var(--mono)', fontSize: 10.5, color: T.rejected,
+              padding: '9px 12px', background: `${T.rejected}12`,
+              border: `1px solid ${T.rejected}30`,
             }}>{error}</div>
           )}
 
-          <button
-            onClick={submit}
-            disabled={loading || !email || !password}
-            style={{
-              background: loading ? T.bg3 : T.accent,
-              border: 'none', color: loading ? T.fg2 : '#0a0b0d',
-              fontFamily: 'var(--mono)', fontSize: 11,
-              fontWeight: 700, letterSpacing: '0.08em',
-              padding: '9px', cursor: loading ? 'not-allowed' : 'pointer',
-              width: '100%',
-            }}
-          >
-            {loading ? '…' : mode === 'login' ? 'SE CONNECTER' : 'CRÉER UN COMPTE'}
+          <button onClick={submit} disabled={!canSubmit} style={{
+            background: canSubmit ? T.accent : T.bg3,
+            border: 'none', color: canSubmit ? '#0a0b0d' : T.fg3,
+            fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 700,
+            letterSpacing: '0.08em', padding: '11px',
+            cursor: canSubmit ? 'pointer' : 'not-allowed', width: '100%',
+            marginTop: 4,
+          }}>
+            {loading ? '…' : mode === 'login' ? 'SIGN IN' : 'CREATE ACCOUNT'}
           </button>
         </div>
+      </div>
 
-        {/* Footer toggle */}
-        <div style={{
-          padding: '12px 18px', borderTop: `1px solid ${T.br0}`,
-          fontFamily: 'var(--mono)', fontSize: 10.5,
-          color: T.fg3, textAlign: 'center',
-        }}>
-          {mode === 'login' ? "Pas encore de compte ?" : "Déjà un compte ?"}{' '}
-          <button
-            onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(null); }}
-            style={{
-              background: 'none', border: 'none',
-              color: T.accent, fontFamily: 'var(--mono)',
-              fontSize: 10.5, cursor: 'pointer', padding: 0,
-            }}
-          >
-            {mode === 'login' ? "S'inscrire" : 'Se connecter'}
-          </button>
-        </div>
+      <div style={{ marginTop: 16, fontFamily: 'var(--mono)', fontSize: 10, color: T.fg3 }}>
+        Track your internship applications · v2.0
       </div>
     </div>
   );
