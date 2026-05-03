@@ -49,7 +49,7 @@ function AppShell({ user }: { user: User }) {
             {view === 'board' && <BoardView apps={apps} onStatusChange={async (id, status) => {
               setApps(prev => prev.map(a => a.id === id ? { ...a, status } : a));
               await supabase.from('applications').update({ status }).eq('id', id);
-            }} />}
+            }} onAdd={() => { setEditApp(undefined); setAddOpen(true); }} />}
             {view === 'stats' && <StatsView apps={apps} />}
           </>
         )}

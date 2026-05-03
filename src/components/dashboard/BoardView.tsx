@@ -16,7 +16,7 @@ import { STATUS_META, STATUS_ORDER } from '@/data/mockData';
 import { StatusDot, CodeTag } from './Primitives';
 import type { Application, StatusType } from '@/types/dashboard';
 
-const COLS = STATUS_ORDER.filter(s => s !== 'rejected') as StatusType[];
+const COLS = STATUS_ORDER as StatusType[];
 
 // ── Card (draggable) ─────────────────────────────────────────────────────────
 
@@ -83,8 +83,19 @@ function Column({
   const { setNodeRef, isOver } = useDroppable({ id: status });
   const m = STATUS_META[status];
 
+  const dropColor = status === 'rejected' ? T.rejected : T.accent;
+
   return (
-    <div style={{ width: 240, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+    <div
+      ref={setNodeRef}
+      style={{
+        flex: 1, minWidth: 140, display: 'flex', flexDirection: 'column', gap: 8,
+        background: isOver ? `${dropColor}08` : 'transparent',
+        border: isOver ? `1px dashed ${dropColor}50` : '1px dashed transparent',
+        borderRadius: 2, transition: 'background 0.12s, border-color 0.12s',
+        padding: isOver ? '4px' : '0',
+      }}
+    >
       {/* Header */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 8,
@@ -102,34 +113,32 @@ function Column({
         <CodeTag tone="gray">{String(apps.length).padStart(2, '0')}</CodeTag>
       </div>
 
-      {/* Drop zone */}
-      <div
-        ref={setNodeRef}
-        style={{
-          display: 'flex', flexDirection: 'column', gap: 6,
-          minHeight: 80,
-          padding: isOver ? '4px' : '0',
-          background: isOver ? `${T.accent}0d` : 'transparent',
-          border: isOver ? `1px dashed ${T.accent}60` : '1px dashed transparent',
-          borderRadius: 2,
-          transition: 'all 0.12s ease',
-        }}
-      >
+      {/* Cards */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+        {isOver && status === 'rejected' && (
+          <div style={{
+            padding: '10px', textAlign: 'center',
+            fontFamily: 'var(--mono)', fontSize: 10, color: T.rejected,
+            letterSpacing: '0.1em',
+          }}>DROP TO REJECT</div>
+        )}
         {apps.map(a => (
           <DraggableCard key={a.id} app={a} activeId={activeId} />
         ))}
-        <button onClick={() => onAdd(status)} style={{
-          background: 'transparent',
-          border: `1px dashed ${T.br1}`,
-          padding: '8px', color: T.fg3,
-          fontFamily: 'var(--mono)', fontSize: 10,
-          letterSpacing: '0.08em', cursor: 'pointer',
-          marginTop: apps.length ? 0 : 0,
-        }}>+ ADD</button>
+        {status !== 'rejected' && (
+          <button onClick={() => onAdd(status)} style={{
+            background: 'transparent',
+            border: `1px dashed ${T.br1}`,
+            padding: '8px', color: T.fg3,
+            fontFamily: 'var(--mono)', fontSize: 10,
+            letterSpacing: '0.08em', cursor: 'pointer',
+          }}>+ ADD</button>
+        )}
       </div>
     </div>
   );
 }
+
 
 // ── Board ────────────────────────────────────────────────────────────────────
 
@@ -183,30 +192,13 @@ export function BoardView({ apps: initialApps, onStatusChange, onAdd }: {
           />
         ))}
 
-        {/* Rejected — collapsed */}
-        <div style={{ width: 80, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-            padding: '10px 8px', background: T.bg1,
-            border: `1px solid ${T.br0}`,
-            borderTop: `2px solid ${T.rejected}`,
-          }}>
-            <StatusDot status="rejected" />
-            <span style={{
-              fontFamily: 'var(--mono)', fontSize: 9.5,
-              fontWeight: 600, letterSpacing: '0.1em', color: T.fg3,
-              writingMode: 'vertical-rl', transform: 'rotate(180deg)',
-            }}>REJECTED</span>
-            <CodeTag tone="gray">{String(apps.filter(a => a.status === 'rejected').length).padStart(2, '0')}</CodeTag>
-          </div>
-        </div>
       </div>
 
       {/* Drag overlay — floating ghost card */}
       <DragOverlay dropAnimation={null}>
         {activeApp && (
           <div style={{
-            width: 240,
+            width: 200,
             boxShadow: `0 16px 40px rgba(0,0,0,.5), 0 0 0 1px ${T.accent}40`,
             cursor: 'grabbing',
           }}>

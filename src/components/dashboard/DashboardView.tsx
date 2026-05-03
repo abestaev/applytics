@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import { T } from '@/tokens';
 import { STATUS_META, STATUS_ORDER } from '@/data/mockData';
-import { Panel, Metric, StatusTag, StatusDot, CodeTag, HBar } from './Primitives';
+import { Panel, Metric, StatusTag, StatusDot, CodeTag, HBar, Pill, Sparkbars } from './Primitives';
 import { computeStats } from '@/utils/stats';
 import type { Application, StatusType } from '@/types/dashboard';
 
@@ -116,12 +116,84 @@ function MiddleColumn({ apps, total }: { apps: Application[]; total: number }) {
   );
 }
 
+function UpcomingPanel({ apps }: { apps: Application[] }) {
+  const upcoming = apps
+    .filter(a => a.status === 'interview' || a.status === 'offer')
+    .slice().sort((a, b) => a.lastDays - b.lastDays);
+
+  return (
+    <Panel code="05" title="Upcoming" scroll>
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        {upcoming.length === 0 ? (
+          <div style={{ padding: '14px 12px', fontFamily: 'var(--mono)', fontSize: 10.5, color: T.fg3 }}>
+            No upcoming interviews or decisions
+          </div>
+        ) : upcoming.map((a, i) => (
+          <div key={a.id} style={{
+            display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px',
+            borderBottom: i < upcoming.length - 1 ? `1px solid ${T.br0}` : 'none',
+          }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontFamily: 'var(--display)', fontSize: 12, color: T.fg0, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.company}</div>
+              <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: T.fg2, marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.role}</div>
+            </div>
+            <div style={{ textAlign: 'right', flexShrink: 0 }}>
+              <Pill tone={a.status === 'offer' ? 'lime' : 'cyan'} size="xs">{STATUS_META[a.status].short}</Pill>
+              <div style={{ fontFamily: 'var(--mono)', fontSize: 9.5, color: T.fg3, marginTop: 3 }}>
+                {a.lastDays === 0 ? 'today' : `${a.lastDays}d ago`}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Panel>
+  );
+}
+
+function ActivityPanel({ apps }: { apps: Application[] }) {
+  // Build 90-day sparkbar data from real apps using sentAt
+  const now = Date.now();
+  const buckets = Array(90).fill(0) as number[];
+  apps.forEach(a => {
+    if (!a.sentAt) return;
+    const daysAgo = Math.floor((now - new Date(a.sentAt).getTime()) / 86_400_000);
+    if (daysAgo >= 0 && daysAgo < 90) buckets[89 - daysAgo]++;
+  });
+  const total = buckets.reduce((s, v) => s + v, 0);
+
+  const d = new Date();
+  const labels = [
+    new Date(d.getFullYear(), d.getMonth() - 2, 1).toLocaleDateString('en', { month: 'short' }),
+    new Date(d.getFullYear(), d.getMonth() - 1, 1).toLocaleDateString('en', { month: 'short' }),
+    new Date(d.getFullYear(), d.getMonth(), 1).toLocaleDateString('en', { month: 'short' }),
+  ];
+
+  return (
+    <Panel code="06" title="Activity · 90d"
+      action={<span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: T.fg2 }}>{total} apps</span>}
+    >
+      <div style={{ padding: '14px 14px 10px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {total === 0 ? (
+          <span style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: T.fg3 }}>No activity yet</span>
+        ) : (
+          <>
+            <Sparkbars data={buckets} height={48} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--mono)', fontSize: 9.5, color: T.fg3 }}>
+              {labels.map(l => <span key={l}>{l}</span>)}
+            </div>
+          </>
+        )}
+      </div>
+    </Panel>
+  );
+}
+
 export function DashboardView({ apps }: { apps: Application[] }) {
   const stats = computeStats(apps);
   return (
     <div style={{
       display: 'grid',
-      gridTemplateColumns: '1.6fr 1fr',
+      gridTemplateColumns: '1.4fr 1fr 0.85fr',
       gridTemplateRows: 'auto 1fr',
       gap: 1, background: T.br0, flex: 1, minHeight: 0, padding: 1,
     }}>
@@ -141,6 +213,12 @@ export function DashboardView({ apps }: { apps: Application[] }) {
 
       <PipelinePanel apps={apps} />
       <MiddleColumn apps={apps} total={stats.total} />
+
+      {/* Right column — Upcoming + Activity 90d stacked */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 1, background: T.br0 }}>
+        <UpcomingPanel apps={apps} />
+        <ActivityPanel apps={apps} />
+      </div>
     </div>
   );
 }
