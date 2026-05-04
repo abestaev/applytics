@@ -151,25 +151,25 @@ function UpcomingPanel({ apps }: { apps: Application[] }) {
 }
 
 function ActivityPanel({ apps }: { apps: Application[] }) {
-  // Build 90-day sparkbar data from real apps using sentAt
+  const DAYS = 30;
   const now = Date.now();
-  const buckets = Array(90).fill(0) as number[];
+  const buckets = Array(DAYS).fill(0) as number[];
   apps.forEach(a => {
     if (!a.sentAt) return;
     const daysAgo = Math.floor((now - new Date(a.sentAt).getTime()) / 86_400_000);
-    if (daysAgo >= 0 && daysAgo < 90) buckets[89 - daysAgo]++;
+    if (daysAgo >= 0 && daysAgo < DAYS) buckets[DAYS - 1 - daysAgo]++;
   });
   const total = buckets.reduce((s, v) => s + v, 0);
 
   const d = new Date();
   const labels = [
-    new Date(d.getFullYear(), d.getMonth() - 2, 1).toLocaleDateString('en', { month: 'short' }),
-    new Date(d.getFullYear(), d.getMonth() - 1, 1).toLocaleDateString('en', { month: 'short' }),
-    new Date(d.getFullYear(), d.getMonth(), 1).toLocaleDateString('en', { month: 'short' }),
+    new Date(d.getFullYear(), d.getMonth(), d.getDate() - 29).toLocaleDateString('en', { day: 'numeric', month: 'short' }),
+    new Date(d.getFullYear(), d.getMonth(), d.getDate() - 14).toLocaleDateString('en', { day: 'numeric', month: 'short' }),
+    new Date(d.getFullYear(), d.getMonth(), d.getDate()).toLocaleDateString('en', { day: 'numeric', month: 'short' }),
   ];
 
   return (
-    <Panel code="06" title="Activity · 90d"
+    <Panel code="06" title="Activity · 30d"
       action={<span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: T.fg2 }}>{total} apps</span>}
     >
       <div style={{ padding: '14px 14px 10px', display: 'flex', flexDirection: 'column', gap: 10 }}>

@@ -1,5 +1,7 @@
 export type StatusType = 'draft' | 'sent' | 'followup' | 'interview' | 'offer' | 'rejected';
+export type AppType = 'stage' | 'alternance' | 'cdi' | 'freelance';
 export type ViewType = 'dash' | 'list' | 'board' | 'stats';
+export type SyncStatus = 'loading' | 'synced' | 'offline' | 'error';
 
 export interface Application {
   id: string;
@@ -17,6 +19,7 @@ export interface Application {
   link: string;
   notes: string;
   sentAt?: string;
+  type?: AppType;
 }
 
 export interface Stats {

@@ -10,6 +10,7 @@ type SortDir = 'asc' | 'desc';
 const HEADERS: { k: SortKey; label: string; w: number; right?: boolean }[] = [
   { k: 'id',       label: 'ID',      w: 80 },
   { k: 'company',  label: 'COMPANY', w: 130 },
+  { k: 'type',     label: 'TYPE',    w: 80 },
   { k: 'role',     label: 'ROLE',    w: 220 },
   { k: 'status',   label: 'STATUS',  w: 80 },
   { k: 'source',   label: 'SOURCE',  w: 140 },
@@ -228,6 +229,7 @@ export function ListView({ apps, query = '', onEdit, onDelete }: {
                 }}>
                   <td style={{ padding: '0 10px', color: T.fg3, fontSize: 10 }}>{a.id.slice(0, 8)}</td>
                   <td style={{ padding: '0 10px', color: T.fg0, fontWeight: 500 }}>{a.company}</td>
+                  <td style={{ padding: '0 10px', color: T.fg2, fontSize: 10 }}>{a.type ?? 'stage'}</td>
                   <td style={{ padding: '0 10px', color: T.fg1, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.role}</td>
                   <td style={{ padding: '0 10px' }}><StatusTag status={a.status as StatusType} /></td>
                   <td style={{ padding: '0 10px', color: T.fg2 }}>{a.source}</td>

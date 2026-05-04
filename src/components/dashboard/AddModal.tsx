@@ -3,7 +3,7 @@ import { T } from '@/tokens';
 import { STATUS_META, STATUS_ORDER } from '@/data/mockData';
 import { CodeTag, ToolBtn } from './Primitives';
 import type { NewApplication } from '@/hooks/useApplications';
-import type { Application, StatusType } from '@/types/dashboard';
+import type { Application, AppType, StatusType } from '@/types/dashboard';
 
 interface AddModalProps {
   open: boolean;
@@ -24,6 +24,7 @@ interface FormState {
   salary: string;
   contact: string;
   status: StatusType;
+  type: AppType;
   priority: number;
   link: string;
   notes: string;
@@ -33,7 +34,7 @@ interface FormState {
 const INITIAL: FormState = {
   company: '', role: '', source: 'LinkedIn', loc: 'Paris',
   remote: 'Hybrid', salary: '', contact: '', status: 'draft',
-  priority: 3, link: '', notes: '', sentAt: '',
+  type: 'stage', priority: 3, link: '', notes: '', sentAt: new Date().toISOString().slice(0, 10),
 };
 
 function initialForm(status: StatusType = 'draft'): FormState {
@@ -45,12 +46,13 @@ function appToForm(app: Application): FormState {
     company: app.company, role: app.role, source: app.source,
     loc: app.loc, remote: app.remote, salary: app.salary,
     contact: app.contact, status: app.status,
+    type: app.type ?? 'stage',
     priority: app.priority, link: app.link, notes: app.notes,
-    sentAt: app.sentAt ? app.sentAt.slice(0, 10) : '',
+    sentAt: app.sentAt ? app.sentAt.slice(0, 10) : new Date().toISOString().slice(0, 10),
   };
 }
 
-const SOURCE_SUGGESTIONS = ['LinkedIn', 'Welcome to the Jungle', 'Indeed', 'Direct', 'Referral', '42 intra'];
+const SOURCE_SUGGESTIONS = ['LinkedIn', 'Welcome to the Jungle', 'Indeed', 'Direct', 'Referral', '42 intra', 'Seekube'];
 
 function ComboField({ label, value, onChange }: {
   label: string; value: string; onChange: (v: string) => void;
@@ -264,6 +266,13 @@ export function AddModal({ open, onClose, onAdd, onUpdate, totalApps, initialSta
           <Field label="SALARY"   value={form.salary}  onChange={v => set('salary', v)}   placeholder="1400€/mo" />
           <SelectField label="STATUS"   value={form.status}   onChange={v => set('status', v as StatusType)}
             options={STATUS_ORDER.map(s => ({ value: s, label: STATUS_META[s].label }))} />
+          <SelectField label="TYPE"     value={form.type}     onChange={v => set('type', v as AppType)}
+            options={[
+              { value: 'stage',      label: 'Stage' },
+              { value: 'alternance', label: 'Alternance' },
+              { value: 'cdi',        label: 'CDI' },
+              { value: 'freelance',  label: 'Freelance' },
+            ]} />
           <div>
             <FieldLabel>SENT DATE</FieldLabel>
             <input type="date" value={form.sentAt} onChange={e => set('sentAt', e.target.value)} style={{

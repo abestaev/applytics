@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
-import type { Application, StatusType } from '@/types/dashboard';
+import type { Application, AppType, StatusType, SyncStatus } from '@/types/dashboard';
 
 // DB row → Application (compute sentDays / lastDays from timestamps)
 function rowToApp(row: Record<string, unknown>): Application {
@@ -24,6 +24,7 @@ function rowToApp(row: Record<string, unknown>): Application {
     link:      row.link as string,
     notes:     row.notes as string,
     sentAt:    row.sent_at as string | undefined,
+    type:      (row.type as AppType) ?? 'stage',
   };
 }
 
@@ -35,22 +36,46 @@ export function useApplications() {
   const [apps, setApps]       = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState<string | null>(null);
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>(
+    typeof navigator !== 'undefined' && !navigator.onLine ? 'offline' : 'loading',
+  );
+
+  const isOffline = () => typeof navigator !== 'undefined' && !navigator.onLine;
+
+  useEffect(() => {
+    const handleOnline = () => setSyncStatus(current => current === 'offline' ? 'synced' : current);
+    const handleOffline = () => setSyncStatus('offline');
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   const fetch = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setSyncStatus(isOffline() ? 'offline' : 'loading');
     const { data, error } = await supabase
       .from('applications')
       .select('*')
       .order('created_at', { ascending: false });
-    if (error) { setError(error.message); setLoading(false); return; }
+    if (error) {
+      setError(error.message);
+      setSyncStatus(isOffline() ? 'offline' : 'error');
+      setLoading(false);
+      return;
+    }
     setApps((data ?? []).map(rowToApp));
+    setSyncStatus('synced');
     setLoading(false);
   }, []);
 
   useEffect(() => { void fetch(); }, [fetch]);
 
   const add = async (values: NewApplication) => {
+    setSyncStatus(isOffline() ? 'offline' : 'loading');
     const { data, error } = await supabase
       .from('applications')
       .insert({
@@ -65,17 +90,24 @@ export function useApplications() {
         priority:      values.priority,
         link:          values.link,
         notes:         values.notes,
+        type:          values.type ?? 'stage',
         sent_at:       values.sentAt ?? null,
         last_event_at: values.sentAt ?? null,
       })
       .select()
       .single();
-    if (error) throw new Error(error.message);
+    if (error) {
+      setError(error.message);
+      setSyncStatus(isOffline() ? 'offline' : 'error');
+      throw new Error(error.message);
+    }
     setApps(prev => [rowToApp(data), ...prev]);
+    setSyncStatus('synced');
     return rowToApp(data);
   };
 
   const update = async (id: string, patch: Partial<Omit<Application, 'id' | 'sentDays' | 'lastDays'>>) => {
+    setSyncStatus(isOffline() ? 'offline' : 'loading');
     const dbPatch: Record<string, unknown> = { ...patch };
     if ('sentDays' in dbPatch) delete dbPatch.sentDays;
     if ('lastDays' in dbPatch) delete dbPatch.lastDays;
@@ -99,8 +131,13 @@ export function useApplications() {
       .eq('id', id)
       .select()
       .single();
-    if (error) throw new Error(error.message);
+    if (error) {
+      setError(error.message);
+      setSyncStatus(isOffline() ? 'offline' : 'error');
+      throw new Error(error.message);
+    }
     setApps(prev => prev.map(a => a.id === id ? rowToApp(data) : a));
+    setSyncStatus('synced');
   };
 
   const updateStatus = async (id: string, status: StatusType) => {
@@ -108,10 +145,16 @@ export function useApplications() {
   };
 
   const remove = async (id: string) => {
+    setSyncStatus(isOffline() ? 'offline' : 'loading');
     const { error } = await supabase.from('applications').delete().eq('id', id);
-    if (error) throw new Error(error.message);
+    if (error) {
+      setError(error.message);
+      setSyncStatus(isOffline() ? 'offline' : 'error');
+      throw new Error(error.message);
+    }
     setApps(prev => prev.filter(a => a.id !== id));
+    setSyncStatus('synced');
   };
 
-  return { apps, setApps, loading, error, refetch: fetch, add, update, updateStatus, remove };
+  return { apps, setApps, loading, error, syncStatus, refetch: fetch, add, update, updateStatus, remove };
 }
