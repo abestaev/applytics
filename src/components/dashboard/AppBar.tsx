@@ -1,7 +1,7 @@
 import { T } from '@/tokens';
 
 import { ToolBtn } from './Primitives';
-import type { ViewType } from '@/types/dashboard';
+import type { SyncStatus, ViewType } from '@/types/dashboard';
 
 interface AppBarProps {
   view: ViewType;
@@ -11,6 +11,7 @@ interface AppBarProps {
   onAdd: () => void;
   userEmail?: string;
   onSignOut: () => void;
+  syncStatus: SyncStatus;
 }
 
 const VIEWS: [string, ViewType][] = [
@@ -20,8 +21,16 @@ const VIEWS: [string, ViewType][] = [
   ['STATS', 'stats'],
 ];
 
-export function AppBar({ view, onView, query, onQuery, onAdd, userEmail, onSignOut }: AppBarProps) {
+const SYNC_META: Record<SyncStatus, { label: string; color: string; title: string }> = {
+  loading: { label: 'LOAD', color: T.followup, title: 'Synchronisation en cours' },
+  synced:  { label: 'SYNC', color: T.offer, title: 'Synchronisé' },
+  offline: { label: 'OFF',  color: T.fg3, title: 'Hors ligne' },
+  error:   { label: 'ERR',  color: T.rejected, title: 'Erreur de synchronisation' },
+};
+
+export function AppBar({ view, onView, query, onQuery, onAdd, userEmail, onSignOut, syncStatus }: AppBarProps) {
   const time = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', hour12: false });
+  const sync = SYNC_META[syncStatus];
 
   return (
     <div style={{
@@ -93,7 +102,9 @@ export function AppBar({ view, onView, query, onQuery, onAdd, userEmail, onSignO
       {/* Status */}
       <div style={{ display: 'flex', gap: 14, color: T.fg2, fontSize: 10.5 }}>
         <span><span style={{ color: T.fg3 }}>UTC</span> {time}</span>
-        <span><span style={{ color: T.fg3 }}>NET</span> <span style={{ color: T.offer }}>●</span> SYNC</span>
+        <span title={sync.title}>
+          <span style={{ color: T.fg3 }}>NET</span> <span style={{ color: sync.color }}>●</span> {sync.label}
+        </span>
         {userEmail && (
           <button
             onClick={onSignOut}

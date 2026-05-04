@@ -19,7 +19,7 @@ function AppShell({ user }: { user: User }) {
   const [addOpen, setAddOpen]   = useState(false);
   const [editApp, setEditApp]   = useState<import('@/types/dashboard').Application | undefined>(undefined);
 
-  const { apps, setApps, loading, add, update, remove } = useApplications();
+  const { apps, loading, add, update, updateStatus, remove, syncStatus } = useApplications();
 
   const signOut = () => supabase.auth.signOut();
 
@@ -34,6 +34,7 @@ function AppShell({ user }: { user: User }) {
         onAdd={() => setAddOpen(true)}
         userEmail={user.email}
         onSignOut={signOut}
+        syncStatus={syncStatus}
       />
 
       <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
@@ -46,10 +47,7 @@ function AppShell({ user }: { user: User }) {
           <>
             {view === 'dash'  && <DashboardView apps={apps} />}
             {view === 'list'  && <ListView apps={apps} query={query} onEdit={app => { setEditApp(app); setAddOpen(true); }} onDelete={remove} />}
-            {view === 'board' && <BoardView apps={apps} onStatusChange={async (id, status) => {
-              setApps(prev => prev.map(a => a.id === id ? { ...a, status } : a));
-              await supabase.from('applications').update({ status }).eq('id', id);
-            }} onAdd={() => { setEditApp(undefined); setAddOpen(true); }} />}
+            {view === 'board' && <BoardView apps={apps} onStatusChange={updateStatus} onAdd={() => { setEditApp(undefined); setAddOpen(true); }} />}
             {view === 'stats' && <StatsView apps={apps} />}
           </>
         )}
