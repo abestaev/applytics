@@ -54,6 +54,12 @@ export function AppBar({ view, onView, query, onQuery, onAdd, userEmail, onSignO
         }}>Applytics</span>
         <span style={{ color: T.fg3 }}>·</span>
         <span style={{ color: T.fg2, fontSize: 10.5 }}>v2.0</span>
+        {userEmail && (
+          <>
+            <span style={{ color: T.fg3 }}>·</span>
+            <span style={{ color: T.fg2, fontSize: 10.5 }}>{userEmail}</span>
+          </>
+        )}
       </div>
 
       {/* Nav */}
