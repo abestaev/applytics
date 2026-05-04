@@ -3,6 +3,7 @@ import { T } from '@/tokens';
 import { STATUS_META, STATUS_ORDER } from '@/data/mockData';
 import { Panel, Metric, StatusTag, StatusDot, CodeTag, HBar, Pill, Sparkbars } from './Primitives';
 import { computeStats } from '@/utils/stats';
+import { useUserSettings } from '@/hooks/useUserSettings';
 import type { Application, StatusType } from '@/types/dashboard';
 
 const COL_HEADER: CSSProperties = {
@@ -118,7 +119,6 @@ function MiddleColumn({ apps, total }: { apps: Application[]; total: number }) {
   );
 }
 
-const DAILY_GOAL_KEY = 'applytics.dailyGoal';
 const clampDailyGoal = (value: number) => Math.max(1, Math.min(1000, Math.round(value || 1)));
 
 function isToday(iso?: string) {
@@ -131,16 +131,11 @@ function isToday(iso?: string) {
 }
 
 function TodoPanel({ apps }: { apps: Application[] }) {
-  const [dailyGoal, setDailyGoal] = useState(() => {
-    const saved = Number(localStorage.getItem(DAILY_GOAL_KEY));
-    return Number.isFinite(saved) && saved > 0 ? clampDailyGoal(saved) : 3;
-  });
+  const { dailyGoal, setDailyGoal } = useUserSettings();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [goalDraft, setGoalDraft] = useState(String(dailyGoal));
 
-  useEffect(() => {
-    localStorage.setItem(DAILY_GOAL_KEY, String(dailyGoal));
-  }, [dailyGoal]);
+  useEffect(() => { setGoalDraft(String(dailyGoal)); }, [dailyGoal]);
 
   const followups = useMemo(() => apps
     .filter(a => ['sent', 'followup'].includes(a.status) && a.sentDays >= 7)
@@ -162,7 +157,7 @@ function TodoPanel({ apps }: { apps: Application[] }) {
 
   const saveGoal = () => {
     const next = Number(goalDraft);
-    setDailyGoal(clampDailyGoal(Number.isFinite(next) ? next : dailyGoal));
+    void setDailyGoal(clampDailyGoal(Number.isFinite(next) ? next : dailyGoal));
     setSettingsOpen(false);
   };
 
