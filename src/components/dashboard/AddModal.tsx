@@ -3,7 +3,7 @@ import { T } from '@/tokens';
 import { STATUS_META, STATUS_ORDER } from '@/data/mockData';
 import { CodeTag, ToolBtn } from './Primitives';
 import type { NewApplication } from '@/hooks/useApplications';
-import type { Application, AppType, StatusType } from '@/types/dashboard';
+import type { Application, AppType, InterviewStage, StatusType } from '@/types/dashboard';
 
 interface AddModalProps {
   open: boolean;
@@ -25,6 +25,8 @@ interface FormState {
   contact: string;
   status: StatusType;
   type: AppType;
+  interviewStage: InterviewStage | '';
+  interviewDate: string;
   priority: number;
   link: string;
   notes: string;
@@ -34,7 +36,7 @@ interface FormState {
 const INITIAL: FormState = {
   company: '', role: '', source: 'LinkedIn', loc: 'Paris',
   remote: 'Hybrid', salary: '', contact: '', status: 'draft',
-  type: 'stage', priority: 3, link: '', notes: '', sentAt: new Date().toISOString().slice(0, 10),
+  type: 'stage', interviewStage: '', interviewDate: '', priority: 3, link: '', notes: '', sentAt: new Date().toISOString().slice(0, 10),
 };
 
 function initialForm(status: StatusType = 'draft'): FormState {
@@ -47,9 +49,17 @@ function appToForm(app: Application): FormState {
     loc: app.loc, remote: app.remote, salary: app.salary,
     contact: app.contact, status: app.status,
     type: app.type ?? 'stage',
+    interviewStage: app.interviewStage ?? '',
+    interviewDate: app.interviewDate ? toLocalInput(app.interviewDate) : '',
     priority: app.priority, link: app.link, notes: app.notes,
     sentAt: app.sentAt ? app.sentAt.slice(0, 10) : new Date().toISOString().slice(0, 10),
   };
+}
+
+function toLocalInput(iso: string): string {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 const SOURCE_SUGGESTIONS = ['LinkedIn', 'Welcome to the Jungle', 'Indeed', 'Direct', 'Referral', '42 intra', 'Seekube'];
@@ -200,14 +210,20 @@ export function AddModal({ open, onClose, onAdd, onUpdate, totalApps, initialSta
     setSaving(true);
     setError(null);
     try {
+      const stage = form.interviewStage || undefined;
+      const iDate = form.interviewDate ? new Date(form.interviewDate).toISOString() : undefined;
       if (isEdit) {
         await onUpdate(editApp.id, {
           ...form,
+          interviewStage: stage as InterviewStage | undefined,
+          interviewDate: iDate,
           sentAt: form.sentAt ? new Date(form.sentAt).toISOString() : undefined,
         });
       } else {
         await onAdd({
           ...form,
+          interviewStage: stage as InterviewStage | undefined,
+          interviewDate: iDate,
           sentAt: form.sentAt
             ? new Date(form.sentAt).toISOString()
             : form.status !== 'draft' ? new Date().toISOString() : undefined,
@@ -266,6 +282,31 @@ export function AddModal({ open, onClose, onAdd, onUpdate, totalApps, initialSta
           <Field label="SALARY"   value={form.salary}  onChange={v => set('salary', v)}   placeholder="1400€/mo" />
           <SelectField label="STATUS"   value={form.status}   onChange={v => set('status', v as StatusType)}
             options={STATUS_ORDER.map(s => ({ value: s, label: STATUS_META[s].label }))} />
+          {form.status === 'interview' && (
+            <SelectField label="INTERVIEW STAGE" value={form.interviewStage} onChange={v => set('interviewStage', v as InterviewStage | '')}
+              options={[
+                { value: '',                 label: '— not set —' },
+                { value: 'pending_date',     label: 'Waiting for date' },
+                { value: 'pending_approval', label: 'Waiting for approval' },
+              ]} />
+          )}
+          {form.status === 'interview' && (
+            <div>
+              <FieldLabel>INTERVIEW DATE</FieldLabel>
+              <input
+                type="datetime-local"
+                value={form.interviewDate}
+                onChange={e => set('interviewDate', e.target.value)}
+                style={{
+                  width: '100%', background: T.bg0, border: `1px solid ${T.br1}`,
+                  color: form.interviewDate ? T.fg0 : T.fg3,
+                  fontFamily: 'var(--mono)', fontSize: 11,
+                  padding: '6px 9px', outline: 'none', height: 28,
+                  colorScheme: 'dark',
+                }}
+              />
+            </div>
+          )}
           <SelectField label="TYPE"     value={form.type}     onChange={v => set('type', v as AppType)}
             options={[
               { value: 'stage',      label: 'Stage' },

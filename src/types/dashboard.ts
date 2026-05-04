@@ -1,5 +1,6 @@
 export type StatusType = 'draft' | 'sent' | 'followup' | 'interview' | 'offer' | 'rejected';
 export type AppType = 'stage' | 'alternance' | 'cdi' | 'freelance';
+export type InterviewStage = 'pending_date' | 'pending_approval';
 export type ViewType = 'dash' | 'list' | 'board' | 'stats';
 export type SyncStatus = 'loading' | 'synced' | 'offline' | 'error';
 
@@ -20,6 +21,8 @@ export interface Application {
   notes: string;
   sentAt?: string;
   type?: AppType;
+  interviewStage?: InterviewStage;
+  interviewDate?: string;
 }
 
 export interface Stats {

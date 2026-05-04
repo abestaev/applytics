@@ -53,6 +53,19 @@ function Card({ app, isDragging = false }: { app: Application; isDragging?: bool
           {app.lastDays === 0 ? 'now' : `${app.lastDays}d`}
         </span>
       </div>
+      {app.status === 'interview' && app.interviewDate && (
+        <div style={{
+          fontFamily: 'var(--mono)', fontSize: 9.5,
+          color: T.interview, marginTop: 4,
+          padding: '3px 6px', background: `${T.interview}15`,
+          borderRadius: 2,
+        }}>
+          {new Date(app.interviewDate).toLocaleString('fr-FR', {
+            day: 'numeric', month: 'short',
+            hour: '2-digit', minute: '2-digit',
+          })}
+        </div>
+      )}
     </div>
   );
 }

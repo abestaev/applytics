@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
-import type { Application, AppType, StatusType, SyncStatus } from '@/types/dashboard';
+import type { Application, AppType, InterviewStage, StatusType, SyncStatus } from '@/types/dashboard';
 
 // DB row → Application (compute sentDays / lastDays from timestamps)
 function rowToApp(row: Record<string, unknown>): Application {
@@ -23,8 +23,10 @@ function rowToApp(row: Record<string, unknown>): Application {
     priority:  row.priority as number,
     link:      row.link as string,
     notes:     row.notes as string,
-    sentAt:    row.sent_at as string | undefined,
-    type:      (row.type as AppType) ?? 'stage',
+    sentAt:         row.sent_at as string | undefined,
+    type:           (row.type as AppType) ?? 'stage',
+    interviewStage: row.interview_stage as InterviewStage | undefined,
+    interviewDate:  row.interview_date as string | undefined,
   };
 }
 
@@ -90,8 +92,10 @@ export function useApplications() {
         priority:      values.priority,
         link:          values.link,
         notes:         values.notes,
-        type:          values.type ?? 'stage',
-        sent_at:       values.sentAt ?? null,
+        type:             values.type ?? 'stage',
+        interview_stage:  values.interviewStage ?? null,
+        interview_date:   values.interviewDate ?? null,
+        sent_at:          values.sentAt ?? null,
         last_event_at: values.sentAt ?? null,
       })
       .select()
@@ -113,6 +117,14 @@ export function useApplications() {
     if ('lastDays' in dbPatch) delete dbPatch.lastDays;
 
     // Sent date: explicit value takes priority, otherwise auto-set when leaving draft
+    if ('interviewStage' in dbPatch) {
+      dbPatch.interview_stage = dbPatch.interviewStage || null;
+      delete dbPatch.interviewStage;
+    }
+    if ('interviewDate' in dbPatch) {
+      dbPatch.interview_date = dbPatch.interviewDate || null;
+      delete dbPatch.interviewDate;
+    }
     if ('sentAt' in dbPatch) {
       dbPatch.sent_at = dbPatch.sentAt || null;
       delete dbPatch.sentAt;

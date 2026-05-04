@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { T } from '@/tokens';
 import { STATUS_META, STATUS_ORDER } from '@/data/mockData';
 import { Panel, Metric, StatusTag, StatusDot, CodeTag, HBar, Pill, Sparkbars } from './Primitives';
@@ -112,21 +112,219 @@ function MiddleColumn({ apps, total }: { apps: Application[]; total: number }) {
           ))}
         </div>
       </Panel>
+
+      <ActivityPanel apps={apps} />
     </div>
   );
 }
 
+const DAILY_GOAL_KEY = 'applytics.dailyGoal';
+const clampDailyGoal = (value: number) => Math.max(1, Math.min(1000, Math.round(value || 1)));
+
+function isToday(iso?: string) {
+  if (!iso) return false;
+  const d = new Date(iso);
+  const now = new Date();
+  return d.getFullYear() === now.getFullYear()
+    && d.getMonth() === now.getMonth()
+    && d.getDate() === now.getDate();
+}
+
+function TodoPanel({ apps }: { apps: Application[] }) {
+  const [dailyGoal, setDailyGoal] = useState(() => {
+    const saved = Number(localStorage.getItem(DAILY_GOAL_KEY));
+    return Number.isFinite(saved) && saved > 0 ? clampDailyGoal(saved) : 3;
+  });
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [goalDraft, setGoalDraft] = useState(String(dailyGoal));
+
+  useEffect(() => {
+    localStorage.setItem(DAILY_GOAL_KEY, String(dailyGoal));
+  }, [dailyGoal]);
+
+  const followups = useMemo(() => apps
+    .filter(a => ['sent', 'followup'].includes(a.status) && a.sentDays >= 7)
+    .slice()
+    .sort((a, b) => b.sentDays - a.sentDays), [apps]);
+
+  const appliedToday = useMemo(() => apps
+    .filter(a => a.status !== 'draft' && isToday(a.sentAt))
+    .length, [apps]);
+
+  const remaining = Math.max(dailyGoal - appliedToday, 0);
+  const progress = Math.min((appliedToday / dailyGoal) * 100, 100);
+  const todoCount = followups.length + (remaining > 0 ? 1 : 0);
+
+  const openSettings = () => {
+    setGoalDraft(String(dailyGoal));
+    setSettingsOpen(true);
+  };
+
+  const saveGoal = () => {
+    const next = Number(goalDraft);
+    setDailyGoal(clampDailyGoal(Number.isFinite(next) ? next : dailyGoal));
+    setSettingsOpen(false);
+  };
+
+  return (
+    <Panel code="04" title="Today"
+      action={<CodeTag tone={todoCount > 0 ? 'accent' : 'lime'}>{todoCount} TODO</CodeTag>}
+      scroll
+    >
+      <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 12, fontFamily: 'var(--mono)' }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7 }}>
+            <span style={{ color: T.fg1, fontSize: 10.5, letterSpacing: '0.08em' }}>DAILY GOAL</span>
+            <span style={{ flex: 1 }} />
+            <button
+              onClick={openSettings}
+              title="Daily goal settings"
+              style={{
+                width: 24, height: 22, background: T.bg0, border: `1px solid ${T.br1}`,
+                color: T.fg1, cursor: 'pointer', fontFamily: 'var(--mono)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >⚙</button>
+          </div>
+          <div style={{ height: 5, background: T.br0, position: 'relative' }}>
+            <div style={{
+              position: 'absolute', inset: 0, right: `${100 - progress}%`,
+              background: remaining === 0 ? T.offer : T.accent,
+              boxShadow: `0 0 10px ${(remaining === 0 ? T.offer : T.accent)}66`,
+            }} />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: 10, color: T.fg3 }}>
+            <span>{appliedToday}/{dailyGoal} applications today</span>
+            <span style={{ color: remaining === 0 ? T.offer : T.followup }}>
+              {remaining === 0 ? 'done' : `${remaining} left`}
+            </span>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {remaining > 0 && (
+            <div style={{ padding: '9px 10px', background: T.bg2, border: `1px solid ${T.br0}` }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Pill tone="accent" size="xs">APPLY</Pill>
+                <span style={{ color: T.fg0, fontSize: 10.5 }}>{remaining} new application{remaining > 1 ? 's' : ''}</span>
+              </div>
+              <div style={{ color: T.fg3, fontSize: 10, marginTop: 4 }}>Reach your daily application goal</div>
+            </div>
+          )}
+
+          {followups.slice(0, 5).map(a => (
+            <div key={a.id} style={{ padding: '9px 10px', background: T.bg2, border: `1px solid ${T.br0}` }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Pill tone="amber" size="xs">FU</Pill>
+                <span style={{ color: T.fg0, fontSize: 10.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {a.company}
+                </span>
+                <span style={{ flex: 1 }} />
+                <CodeTag tone={a.sentDays >= 14 ? 'red' : 'amber'}>{a.sentDays}d</CodeTag>
+              </div>
+              <div style={{ color: T.fg3, fontSize: 10, marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                Sent at least 7 days ago without answer
+              </div>
+            </div>
+          ))}
+
+          {followups.length > 5 && (
+            <div style={{ color: T.fg3, fontSize: 10, padding: '0 2px' }}>
+              +{followups.length - 5} more followups
+            </div>
+          )}
+
+          {todoCount === 0 && (
+            <div style={{ color: T.fg3, fontSize: 10.5, padding: '4px 0' }}>
+              All daily tasks are clear
+            </div>
+          )}
+        </div>
+      </div>
+
+      {settingsOpen && (
+        <div onClick={() => setSettingsOpen(false)} style={{
+          position: 'fixed', inset: 0, background: 'rgba(8,9,11,.55)',
+          zIndex: 120, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            width: 300, background: T.bg1, border: `1px solid ${T.br2}`,
+            boxShadow: '0 20px 60px rgba(0,0,0,.55)',
+          }}>
+            <div style={{
+              padding: '10px 12px', borderBottom: `1px solid ${T.br0}`,
+              display: 'flex', alignItems: 'center', gap: 8,
+            }}>
+              <CodeTag tone="accent">GOAL</CodeTag>
+              <span style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: T.fg0, letterSpacing: '0.08em' }}>
+                DAILY APPLICATIONS
+              </span>
+              <span style={{ flex: 1 }} />
+              <button onClick={() => setSettingsOpen(false)} style={{
+                background: 'none', border: 'none', color: T.fg2,
+                cursor: 'pointer', fontSize: 16, lineHeight: 1,
+              }}>x</button>
+            </div>
+            <div style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 8, fontFamily: 'var(--mono)' }}>
+              <label style={{ fontSize: 9.5, color: T.fg3, letterSpacing: '0.1em' }}>TARGET PER DAY</label>
+              <input
+                value={goalDraft}
+                inputMode="numeric"
+                pattern="[0-9]*"
+                autoFocus
+                onChange={e => setGoalDraft(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') saveGoal();
+                  if (e.key === 'Escape') setSettingsOpen(false);
+                }}
+                style={{
+                  width: '100%', height: 32, background: T.bg0, border: `1px solid ${T.br1}`,
+                  color: T.fg0, fontFamily: 'var(--mono)', fontSize: 12,
+                  padding: '6px 9px', outline: 'none',
+                }}
+              />
+              <span style={{ fontSize: 10, color: T.fg3 }}>Accepted range: 1-1000</span>
+            </div>
+            <div style={{
+              padding: '10px 12px', borderTop: `1px solid ${T.br0}`,
+              display: 'flex', gap: 8, justifyContent: 'flex-end',
+            }}>
+              <button onClick={() => setSettingsOpen(false)} style={{
+                background: 'transparent', border: `1px solid ${T.br1}`, color: T.fg1,
+                padding: '5px 10px', fontFamily: 'var(--mono)', fontSize: 10,
+                cursor: 'pointer',
+              }}>CANCEL</button>
+              <button onClick={saveGoal} style={{
+                background: T.accent, border: 'none', color: '#0a0b0d',
+                padding: '5px 12px', fontFamily: 'var(--mono)', fontSize: 10,
+                fontWeight: 700, letterSpacing: '0.08em', cursor: 'pointer',
+              }}>SAVE</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </Panel>
+  );
+}
+
 function UpcomingPanel({ apps }: { apps: Application[] }) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   const upcoming = apps
-    .filter(a => a.status === 'interview' || a.status === 'offer')
-    .slice().sort((a, b) => a.lastDays - b.lastDays);
+    .filter(a => {
+      if (a.status !== 'interview' || !a.interviewDate) return false;
+      return new Date(a.interviewDate).getTime() >= today.getTime();
+    })
+    .slice()
+    .sort((a, b) => new Date(a.interviewDate ?? '').getTime() - new Date(b.interviewDate ?? '').getTime());
 
   return (
     <Panel code="05" title="Upcoming" scroll>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         {upcoming.length === 0 ? (
           <div style={{ padding: '14px 12px', fontFamily: 'var(--mono)', fontSize: 10.5, color: T.fg3 }}>
-            No upcoming interviews or decisions
+            No upcoming interviews
           </div>
         ) : upcoming.map((a, i) => (
           <div key={a.id} style={{
@@ -138,9 +336,9 @@ function UpcomingPanel({ apps }: { apps: Application[] }) {
               <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: T.fg2, marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.role}</div>
             </div>
             <div style={{ textAlign: 'right', flexShrink: 0 }}>
-              <Pill tone={a.status === 'offer' ? 'lime' : 'cyan'} size="xs">{STATUS_META[a.status].short}</Pill>
+              <Pill tone="cyan" size="xs">{STATUS_META[a.status].short}</Pill>
               <div style={{ fontFamily: 'var(--mono)', fontSize: 9.5, color: T.fg3, marginTop: 3 }}>
-                {a.lastDays === 0 ? 'today' : `${a.lastDays}d ago`}
+                {a.interviewDate ? new Date(a.interviewDate).toLocaleDateString('en', { day: 'numeric', month: 'short' }) : 'date tbd'}
               </div>
             </div>
           </div>
@@ -214,10 +412,10 @@ export function DashboardView({ apps }: { apps: Application[] }) {
       <PipelinePanel apps={apps} />
       <MiddleColumn apps={apps} total={stats.total} />
 
-      {/* Right column — Upcoming + Activity 90d stacked */}
+      {/* Right column — Today + Upcoming stacked */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 1, background: T.br0 }}>
+        <TodoPanel apps={apps} />
         <UpcomingPanel apps={apps} />
-        <ActivityPanel apps={apps} />
       </div>
     </div>
   );

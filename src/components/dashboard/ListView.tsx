@@ -41,6 +41,16 @@ function DetailPanel({ app, onEdit, onDelete }: {
           <CodeTag tone="accent">{app.id.slice(0, 8)}</CodeTag>
           <span style={{ flex: 1 }} />
           <StatusTag status={app.status} />
+          {app.status === 'interview' && app.interviewStage && (
+            <span style={{
+              fontFamily: 'var(--mono)', fontSize: 9.5,
+              color: app.interviewStage === 'pending_approval' ? T.offer : T.interview,
+              background: app.interviewStage === 'pending_approval' ? `${T.offer}15` : `${T.interview}15`,
+              padding: '2px 6px', borderRadius: 2,
+            }}>
+              {app.interviewStage === 'pending_date' ? 'PENDING DATE' : 'PENDING APPROVAL'}
+            </span>
+          )}
           <CodeTag tone={app.priority === 1 ? 'accent' : 'gray'}>P{app.priority}</CodeTag>
         </div>
         <div style={{ fontFamily: 'var(--display)', fontSize: 18, color: T.fg0, fontWeight: 600, letterSpacing: '-0.01em' }}>
@@ -61,6 +71,9 @@ function DetailPanel({ app, onEdit, onDelete }: {
           ['SALARY',     app.salary],
           ['CONTACT',    app.contact],
           ['SENT',       app.sentDays === 0 ? '—' : `${app.sentDays}d ago`],
+          ...(app.status === 'interview' && app.interviewDate ? [
+            ['INTERVIEW', new Date(app.interviewDate).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false })] as [string, string],
+          ] : []),
           ['LAST EVENT', app.lastDays === 0 ? 'today' : `${app.lastDays}d ago`],
         ] as [string, string][]).map(([k, v]) => (
           <Fragment key={k}>
