@@ -1,36 +1,94 @@
 # Applytics
 
-A Bloomberg-style job application tracker. Track every application, interview, and follow-up from a single dashboard.
+Applytics is a private job application tracker for managing applications, follow-ups, interviews, notes, and CSV workflows in one place.
 
-**[→ applyticsv2.vercel.app](https://applyticsv2.vercel.app/)**
+Live app: [applyticsv2.vercel.app](https://applyticsv2.vercel.app/)
 
----
+## Overview
 
-## Features
+Applytics includes:
 
-- **Dashboard** — pipeline overview, response rates, upcoming interviews, daily application goal
-- **List view** — sortable table with detail panel per application
-- **Board view** — drag-and-drop kanban across statuses
-- **Stats view** — charts and metrics on your job search
-- **Realtime sync** — data synced across all your devices instantly
+- Dashboard with pipeline metrics, daily goal, upcoming interviews, sources, and activity.
+- List view with filtering, sorting, detail panels, edit/delete actions, and mobile cards.
+- Board view with drag-and-drop status updates.
+- Stats view with conversion and source metrics.
+- CSV import with template, validation, preview, and valid-row-only import.
+- CSV export from the Stats page.
+- Supabase authentication and persistence.
 
-## Tech Stack
+## Stack
 
-React · TypeScript · Vite · Supabase · dnd-kit
+React, TypeScript, Vite, Supabase, dnd-kit, Papa Parse.
 
----
+## Local Development
 
-## Self-hosting
-
-Create a Supabase project, add your credentials to `.env.local`:
-
-```
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-```
-
-Then:
+This project is already deployed. Local setup is only needed for development.
 
 ```bash
-npm install && npm run dev
+npm install
+npm run dev
 ```
+
+Required environment variables:
+
+```bash
+VITE_SUPABASE_URL=...
+VITE_SUPABASE_ANON_KEY=...
+```
+
+Useful commands:
+
+```bash
+npm run lint
+npm run build
+npm run preview
+```
+
+## Supabase
+
+The app expects Supabase auth and an `applications` table matching the fields used in `src/hooks/useApplications.ts`.
+
+User settings SQL is available here:
+
+```text
+supabase/user_settings.sql
+```
+
+Main application statuses:
+
+```text
+draft, sent, followup, interview, offer, rejected
+```
+
+Application types:
+
+```text
+stage, alternance, cdi, freelance
+```
+
+## CSV
+
+Import is available from the Dashboard page via `IMPORT CSV`.
+
+Minimum required columns:
+
+```text
+company, role
+```
+
+Recommended columns:
+
+```text
+company, role, status, source, location, mode, salary, contact, priority, link, notes, sent_at, type, interview_stage, interview_date
+```
+
+A template can be downloaded from the import modal.
+
+Export is available from the Stats page via `EXPORT CSV`.
+
+## Notes
+
+- The landing page uses static demo data.
+- Mobile is focused on Dashboard and List.
+- Board and Stats are desktop-first.
+- Vite may warn about bundle size; this is not currently blocking.
