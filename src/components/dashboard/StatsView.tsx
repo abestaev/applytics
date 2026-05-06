@@ -1,10 +1,12 @@
 import { T } from '@/tokens';
 import { Panel } from './Primitives';
 import { computeStats } from '@/utils/stats';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import type { Application } from '@/types/dashboard';
 
 export function StatsView({ apps }: { apps: Application[] }) {
   const stats = computeStats(apps);
+  const isCompact = useIsMobile(1440);
 
   const funnel = [
     { label: 'SUBMITTED', count: stats.sent },
@@ -41,11 +43,16 @@ export function StatsView({ apps }: { apps: Application[] }) {
   return (
     <div style={{
       flex: 1, minHeight: 0, padding: 1,
-      display: 'grid', gridTemplateColumns: '1fr 1fr',
-      gridTemplateRows: '1fr 1fr', gap: 1, background: T.br0,
+      display: 'grid',
+      gridTemplateColumns: isCompact ? '1fr' : '1fr 1fr',
+      gridAutoRows: isCompact ? 'max-content' : undefined,
+      gridTemplateRows: isCompact ? undefined : '1fr 1fr',
+      alignContent: isCompact ? 'start' : undefined,
+      gap: 1, background: T.br0,
+      overflow: isCompact ? 'auto' : 'hidden',
     }}>
       {/* A — Conversion funnel */}
-      <Panel code="A" title="Conversion funnel">
+      <Panel code="A" title="Conversion funnel" expand={isCompact}>
         <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
           {funnel.map((f, i) => {
             const pct = ((f.count / funnelMax) * 100).toFixed(0);
@@ -77,7 +84,7 @@ export function StatsView({ apps }: { apps: Application[] }) {
       </Panel>
 
       {/* B — Source efficacy */}
-      <Panel code="B" title="Source efficacy">
+      <Panel code="B" title="Source efficacy" expand={isCompact}>
         <div style={{ padding: '14px 18px' }}>
           {sourceRows.length === 0 ? (
             <span style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: T.fg3 }}>Aucune source</span>
@@ -111,7 +118,7 @@ export function StatsView({ apps }: { apps: Application[] }) {
         </div>
       </Panel>
       {/* C — Response time distribution */}
-      <Panel code="C" title="Response time distribution">
+      <Panel code="C" title="Response time distribution" expand={isCompact}>
         <div style={{
           flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
           padding: 24, fontFamily: 'var(--mono)', fontSize: 10.5, color: T.fg3,
@@ -122,7 +129,7 @@ export function StatsView({ apps }: { apps: Application[] }) {
       </Panel>
 
       {/* D — Weekly cadence */}
-      <Panel code="D" title="Weekly cadence">
+      <Panel code="D" title="Weekly cadence" expand={isCompact}>
         <div style={{
           flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
           padding: 24, fontFamily: 'var(--mono)', fontSize: 10.5, color: T.fg3,

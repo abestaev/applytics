@@ -63,18 +63,21 @@ export function CodeTag({ children, tone = 'gray' }: { children: ReactNode; tone
   );
 }
 
-export function Panel({ title, code, action, children, style, scroll = false }: {
+export function Panel({ title, code, action, children, style, scroll = false, expand = false }: {
   title?: string;
   code?: string;
   action?: ReactNode;
   children: ReactNode;
   style?: CSSProperties;
   scroll?: boolean;
+  expand?: boolean;
 }) {
   return (
     <div style={{
       background: T.bg1, border: `1px solid ${T.br0}`,
-      display: 'flex', flexDirection: 'column', minHeight: 0,
+      display: 'flex', flexDirection: 'column',
+      minHeight: expand ? 'max-content' : 0,
+      flexShrink: expand ? 0 : undefined,
       ...style,
     }}>
       {(title || code || action) && (
@@ -96,7 +99,7 @@ export function Panel({ title, code, action, children, style, scroll = false }: 
           {action}
         </div>
       )}
-      <div style={{ flex: 1, minHeight: 0, overflow: scroll ? 'auto' : 'hidden' }}>
+      <div style={expand ? { overflow: 'visible', flexShrink: 0 } : { flex: 1, minHeight: 0, overflow: scroll ? 'auto' : 'hidden' }}>
         {children}
       </div>
     </div>
@@ -125,7 +128,10 @@ export function Metric({ label, value, sub, tone = 'fg0' }: {
         letterSpacing: '-0.01em',
       }}>{value}</div>
       {sub && (
-        <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: T.fg2 }}>{sub}</div>
+        <div style={{
+          fontFamily: 'var(--mono)', fontSize: 10, color: T.fg2,
+          whiteSpace: 'nowrap',
+        }}>{sub}</div>
       )}
     </div>
   );
@@ -195,10 +201,11 @@ export function HBar({ value, max, tone = 'accent', height = 4 }: {
   );
 }
 
-export function ToolBtn({ children, active, onClick }: {
+export function ToolBtn({ children, active, onClick, style }: {
   children: ReactNode;
   active?: boolean;
   onClick?: () => void;
+  style?: CSSProperties;
 }) {
   const [hovered, setHovered] = useState(false);
   return (
@@ -215,6 +222,7 @@ export function ToolBtn({ children, active, onClick }: {
         letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 500,
         cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5,
         borderRadius: 2, transition: 'background 0.1s, border-color 0.1s, color 0.1s',
+        ...style,
       }}
     >{children}</button>
   );

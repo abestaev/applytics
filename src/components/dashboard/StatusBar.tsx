@@ -1,4 +1,5 @@
 import { T } from '@/tokens';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 interface StatusBarProps {
   filtered: number;
@@ -6,6 +7,8 @@ interface StatusBarProps {
 }
 
 export function StatusBar({ filtered, total }: StatusBarProps) {
+  const compact = useIsMobile(980);
+
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 16,
@@ -16,10 +19,14 @@ export function StatusBar({ filtered, total }: StatusBarProps) {
       <span><span style={{ color: T.accent }}>●</span> READY</span>
       <span>ROWS <span style={{ color: T.fg0 }}>{filtered}</span>/{total}</span>
       <span style={{ flex: 1 }} />
-      <span style={{ color: T.fg3 }}>↑↓ nav</span>
-      <span style={{ color: T.fg3 }}>⏎ open</span>
-      <span style={{ color: T.fg3 }}>N new</span>
-      <span style={{ color: T.fg3 }}>F filter</span>
+      {!compact && (
+        <>
+          <span style={{ color: T.fg3 }}>↑↓ nav</span>
+          <span style={{ color: T.fg3 }}>⏎ open</span>
+          <span style={{ color: T.fg3 }}>N new</span>
+          <span style={{ color: T.fg3 }}>F filter</span>
+        </>
+      )}
     </div>
   );
 }

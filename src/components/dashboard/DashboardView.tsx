@@ -2,8 +2,9 @@ import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { T } from '@/tokens';
 import { STATUS_META, STATUS_ORDER } from '@/data/mockData';
 import { Panel, Metric, StatusTag, StatusDot, CodeTag, HBar, Pill, Sparkbars } from './Primitives';
-import { computeStats } from '@/utils/stats';
+import { computeStats, formatDays } from '@/utils/stats';
 import { useUserSettings } from '@/hooks/useUserSettings';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import type { Application, StatusType } from '@/types/dashboard';
 
 const COL_HEADER: CSSProperties = {
@@ -13,12 +14,17 @@ const COL_HEADER: CSSProperties = {
   letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: 'var(--mono)',
 };
 
-function PipelinePanel({ apps }: { apps: Application[] }) {
+function PipelinePanel({ apps, expand, code = '01', style }: {
+  apps: Application[];
+  expand?: boolean;
+  code?: string;
+  style?: CSSProperties;
+}) {
   const sorted = apps.slice().sort((a, b) => a.sentDays - b.sentDays).slice(0, 14);
 
   if (apps.length === 0) {
     return (
-      <Panel code="01" title="Pipeline" style={{ gridRow: '2 / 3' }}>
+      <Panel code={code} title="Pipeline" style={{ gridRow: '2 / 3', ...style }} expand={expand}>
         <div style={{
           flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontFamily: 'var(--mono)', fontSize: 10.5, color: T.fg3,
@@ -31,90 +37,121 @@ function PipelinePanel({ apps }: { apps: Application[] }) {
   }
 
   return (
-    <Panel code="01" title="Pipeline · last 14"
+      <Panel code={code} title="Pipeline · last 14"
       action={<span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: T.fg2 }}>sorted by sent_at desc</span>}
-      style={{ gridRow: '2 / 3' }} scroll
+      style={{ gridRow: '2 / 3', ...style }} scroll={!expand} expand={expand}
     >
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--mono)', fontSize: 11 }}>
-        <thead>
-          <tr>
-            {['COMPANY', 'ROLE', 'STATUS', 'SRC', 'LOC', 'SENT', 'LAST', 'P'].map((h, i) => (
-              <th key={h} style={{ ...COL_HEADER, textAlign: i >= 5 && i <= 6 ? 'right' : 'left' }}>{h}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {sorted.map((a, i) => (
-            <tr key={a.id} style={{ color: T.fg1, background: i % 2 ? T.bg1 : T.bg2, borderBottom: `1px solid ${T.br0}` }}>
-              <td style={{ padding: '5px 10px', color: T.fg0, fontWeight: 500 }}>{a.company}</td>
-              <td style={{ padding: '5px 10px', color: T.fg1, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.role}</td>
-              <td style={{ padding: '4px 10px' }}><StatusTag status={a.status as StatusType} /></td>
-              <td style={{ padding: '5px 10px', color: T.fg2, fontSize: 10 }}>{a.source.split(' ')[0].slice(0, 4).toUpperCase()}</td>
-              <td style={{ padding: '5px 10px', color: T.fg2 }}>{a.loc}</td>
-              <td style={{ padding: '5px 10px', textAlign: 'right', color: T.fg1, fontVariantNumeric: 'tabular-nums' }}>
-                {a.sentDays === 0 ? '—' : `${a.sentDays}d`}
-              </td>
-              <td style={{ padding: '5px 10px', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: a.lastDays > 14 ? T.rejected : a.lastDays > 7 ? T.followup : T.fg1 }}>
-                {a.lastDays === 0 ? 'now' : `${a.lastDays}d`}
-              </td>
-              <td style={{ padding: '5px 10px', textAlign: 'right' }}>
-                <CodeTag tone={a.priority === 1 ? 'accent' : 'gray'}>P{a.priority}</CodeTag>
-              </td>
+      <div style={{ width: '100%', overflowX: expand ? 'auto' : 'visible' }}>
+        <table style={{ width: '100%', minWidth: expand ? 760 : undefined, borderCollapse: 'collapse', fontFamily: 'var(--mono)', fontSize: 11 }}>
+          <thead>
+            <tr>
+              {['COMPANY', 'ROLE', 'STATUS', 'SRC', 'LOC', 'SENT', 'LAST', 'P'].map((h, i) => (
+                <th key={h} style={{ ...COL_HEADER, textAlign: i >= 5 && i <= 6 ? 'right' : 'left' }}>{h}</th>
+              ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {sorted.map((a, i) => (
+              <tr key={a.id} style={{ color: T.fg1, background: i % 2 ? T.bg1 : T.bg2, borderBottom: `1px solid ${T.br0}` }}>
+                <td style={{ padding: '5px 10px', color: T.fg0, fontWeight: 500 }}>{a.company}</td>
+                <td style={{ padding: '5px 10px', color: T.fg1, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.role}</td>
+                <td style={{ padding: '4px 10px' }}><StatusTag status={a.status as StatusType} /></td>
+                <td style={{ padding: '5px 10px', color: T.fg2, fontSize: 10 }}>{a.source.split(' ')[0].slice(0, 4).toUpperCase()}</td>
+                <td style={{ padding: '5px 10px', color: T.fg2 }}>{a.loc}</td>
+                <td style={{ padding: '5px 10px', textAlign: 'right', color: T.fg1, fontVariantNumeric: 'tabular-nums' }}>
+                  {a.sentDays === 0 ? '—' : formatDays(a.sentDays)}
+                </td>
+                <td style={{ padding: '5px 10px', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: a.lastDays > 14 ? T.rejected : a.lastDays > 7 ? T.followup : T.fg1 }}>
+                  {formatDays(a.lastDays)}
+                </td>
+                <td style={{ padding: '5px 10px', textAlign: 'right' }}>
+                  <CodeTag tone={a.priority === 1 ? 'accent' : 'gray'}>P{a.priority}</CodeTag>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </Panel>
   );
 }
 
-function MiddleColumn({ apps, total }: { apps: Application[]; total: number }) {
+function DistributionPanel({ apps, total, expand, code = '02', style }: {
+  apps: Application[];
+  total: number;
+  expand?: boolean;
+  code?: string;
+  style?: CSSProperties;
+}) {
+  return (
+    <Panel code={code} title="Pipeline distribution" style={style} expand={expand}>
+      <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 9 }}>
+        {total === 0 ? (
+          <span style={{ color: T.fg3, fontFamily: 'var(--mono)', fontSize: 10.5 }}>Aucune candidature</span>
+        ) : STATUS_ORDER.map(s => {
+          const count = apps.filter(a => a.status === s).length;
+          const m = STATUS_META[s];
+          return (
+            <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 10, fontFamily: 'var(--mono)', fontSize: 10.5 }}>
+              <div style={{ width: 70, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <StatusDot status={s} />
+                <span style={{ color: T.fg1, letterSpacing: '0.06em' }}>{m.label}</span>
+              </div>
+              <HBar value={count} max={total} tone={s} />
+              <span style={{ color: T.fg0, width: 22, textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontFamily: 'var(--mono)' }}>{count}</span>
+              <span style={{ color: T.fg3, width: 38, textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontFamily: 'var(--mono)' }}>
+                {((count / total) * 100).toFixed(0)}%
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </Panel>
+  );
+}
+
+function SourcesPanel({ apps, expand, code = '03', style }: {
+  apps: Application[];
+  expand?: boolean;
+  code?: string;
+  style?: CSSProperties;
+}) {
   const bySource: Record<string, number> = {};
   apps.forEach(a => { bySource[a.source] = (bySource[a.source] ?? 0) + 1; });
   const sourceEntries = Object.entries(bySource).sort((a, b) => b[1] - a[1]);
   const sourceMax = sourceEntries[0]?.[1] ?? 1;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 1, background: T.br0, gridRow: '2 / 3' }}>
-      <Panel code="02" title="Pipeline distribution">
-        <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 9 }}>
-          {total === 0 ? (
-            <span style={{ color: T.fg3, fontFamily: 'var(--mono)', fontSize: 10.5 }}>Aucune candidature</span>
-          ) : STATUS_ORDER.map(s => {
-            const count = apps.filter(a => a.status === s).length;
-            const m = STATUS_META[s];
-            return (
-              <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 10, fontFamily: 'var(--mono)', fontSize: 10.5 }}>
-                <div style={{ width: 70, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <StatusDot status={s} />
-                  <span style={{ color: T.fg1, letterSpacing: '0.06em' }}>{m.label}</span>
-                </div>
-                <HBar value={count} max={total} tone={s} />
-                <span style={{ color: T.fg0, width: 22, textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontFamily: 'var(--mono)' }}>{count}</span>
-                <span style={{ color: T.fg3, width: 38, textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontFamily: 'var(--mono)' }}>
-                  {((count / total) * 100).toFixed(0)}%
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </Panel>
+    <Panel code={code} title="Sources" style={style} expand={expand}>
+      <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 7, fontFamily: 'var(--mono)', fontSize: 10.5 }}>
+        {sourceEntries.length === 0 ? (
+          <span style={{ color: T.fg3, fontSize: 10.5 }}>Aucune source</span>
+        ) : sourceEntries.map(([k, v]) => (
+          <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ width: 150, color: T.fg1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{k}</span>
+            <HBar value={v} max={sourceMax} tone="accent" height={3} />
+            <span style={{ color: T.fg0, width: 22, textAlign: 'right' }}>{v}</span>
+          </div>
+        ))}
+      </div>
+    </Panel>
+  );
+}
 
-      <Panel code="03" title="Sources" style={{ flex: 1 }}>
-        <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 7, fontFamily: 'var(--mono)', fontSize: 10.5 }}>
-          {sourceEntries.length === 0 ? (
-            <span style={{ color: T.fg3, fontSize: 10.5 }}>Aucune source</span>
-          ) : sourceEntries.map(([k, v]) => (
-            <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ width: 150, color: T.fg1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{k}</span>
-              <HBar value={v} max={sourceMax} tone="accent" height={3} />
-              <span style={{ color: T.fg0, width: 22, textAlign: 'right' }}>{v}</span>
-            </div>
-          ))}
-        </div>
-      </Panel>
-
-      <ActivityPanel apps={apps} />
+function MiddleColumn({ apps, total, expand, codes = { distribution: '02', sources: '03', activity: '06' } }: {
+  apps: Application[];
+  total: number;
+  expand?: boolean;
+  codes?: { distribution: string; sources: string; activity: string };
+}) {
+  return (
+    <div style={{
+      display: 'flex', flexDirection: 'column', gap: 1, background: T.br0, gridRow: '2 / 3',
+      flexShrink: expand ? 0 : undefined,
+    }}>
+      <DistributionPanel apps={apps} total={total} expand={expand} code={codes.distribution} />
+      <SourcesPanel apps={apps} expand={expand} code={codes.sources} style={{ flex: 1 }} />
+      <ActivityPanel apps={apps} expand={expand} code={codes.activity} />
     </div>
   );
 }
@@ -130,7 +167,12 @@ function isToday(iso?: string) {
     && d.getDate() === now.getDate();
 }
 
-function TodoPanel({ apps }: { apps: Application[] }) {
+function TodoPanel({ apps, expand, code = '04', style }: {
+  apps: Application[];
+  expand?: boolean;
+  code?: string;
+  style?: CSSProperties;
+}) {
   const { dailyGoal, setDailyGoal } = useUserSettings();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [goalDraft, setGoalDraft] = useState(String(dailyGoal));
@@ -162,9 +204,10 @@ function TodoPanel({ apps }: { apps: Application[] }) {
   };
 
   return (
-    <Panel code="04" title="Today"
+    <Panel code={code} title="Today"
       action={<CodeTag tone={todoCount > 0 ? 'accent' : 'lime'}>{todoCount} TODO</CodeTag>}
-      scroll
+      style={style}
+      scroll={!expand} expand={expand}
     >
       <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 12, fontFamily: 'var(--mono)' }}>
         <div>
@@ -215,7 +258,7 @@ function TodoPanel({ apps }: { apps: Application[] }) {
                   {a.company}
                 </span>
                 <span style={{ flex: 1 }} />
-                <CodeTag tone={a.sentDays >= 14 ? 'red' : 'amber'}>{a.sentDays}d</CodeTag>
+                <CodeTag tone={a.sentDays >= 14 ? 'red' : 'amber'}>{formatDays(a.sentDays)}</CodeTag>
               </div>
               <div style={{ color: T.fg3, fontSize: 10, marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 Sent at least 7 days ago without answer
@@ -302,7 +345,12 @@ function TodoPanel({ apps }: { apps: Application[] }) {
   );
 }
 
-function UpcomingPanel({ apps }: { apps: Application[] }) {
+function UpcomingPanel({ apps, expand, code = '05', style }: {
+  apps: Application[];
+  expand?: boolean;
+  code?: string;
+  style?: CSSProperties;
+}) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -315,7 +363,7 @@ function UpcomingPanel({ apps }: { apps: Application[] }) {
     .sort((a, b) => new Date(a.interviewDate ?? '').getTime() - new Date(b.interviewDate ?? '').getTime());
 
   return (
-    <Panel code="05" title="Upcoming" scroll>
+    <Panel code={code} title="Upcoming" style={style} scroll={!expand} expand={expand}>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         {upcoming.length === 0 ? (
           <div style={{ padding: '14px 12px', fontFamily: 'var(--mono)', fontSize: 10.5, color: T.fg3 }}>
@@ -333,7 +381,9 @@ function UpcomingPanel({ apps }: { apps: Application[] }) {
             <div style={{ textAlign: 'right', flexShrink: 0 }}>
               <Pill tone="cyan" size="xs">{STATUS_META[a.status].short}</Pill>
               <div style={{ fontFamily: 'var(--mono)', fontSize: 9.5, color: T.fg3, marginTop: 3 }}>
-                {a.interviewDate ? new Date(a.interviewDate).toLocaleDateString('en', { day: 'numeric', month: 'short' }) : 'date tbd'}
+                {a.interviewDate
+  ? new Date(a.interviewDate).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false })
+  : 'date tbd'}
               </div>
             </div>
           </div>
@@ -343,9 +393,14 @@ function UpcomingPanel({ apps }: { apps: Application[] }) {
   );
 }
 
-function ActivityPanel({ apps }: { apps: Application[] }) {
+function ActivityPanel({ apps, expand, code = '06', style }: {
+  apps: Application[];
+  expand?: boolean;
+  code?: string;
+  style?: CSSProperties;
+}) {
   const DAYS = 30;
-  const now = Date.now();
+  const [now] = useState(() => Date.now());
   const buckets = Array(DAYS).fill(0) as number[];
   apps.forEach(a => {
     if (!a.sentAt) return;
@@ -362,8 +417,10 @@ function ActivityPanel({ apps }: { apps: Application[] }) {
   ];
 
   return (
-    <Panel code="06" title="Activity · 30d"
+    <Panel code={code} title="Activity · 30d"
       action={<span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: T.fg2 }}>{total} apps</span>}
+      style={style}
+      expand={expand}
     >
       <div style={{ padding: '14px 14px 10px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         {total === 0 ? (
@@ -383,6 +440,111 @@ function ActivityPanel({ apps }: { apps: Application[] }) {
 
 export function DashboardView({ apps }: { apps: Application[] }) {
   const stats = computeStats(apps);
+  const isMobile = useIsMobile();
+  const isCompactDesktop = useIsMobile(1440);
+  const isKpiCompact = useIsMobile(700);
+
+  if (isMobile) {
+    return (
+      <div style={{
+        display: 'flex', flexDirection: 'column', gap: 1, background: T.br0,
+        flex: '1 0 auto', overflowX: 'hidden',
+        padding: 1, WebkitOverflowScrolling: 'touch',
+      }}>
+        <div style={{
+          background: T.bg1,
+          padding: '12px 10px',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+          gap: 7,
+        }}>
+          {([
+            ['SENT', String(stats.sent).padStart(3, '0'), 'fg0'],
+            ['RESPONSE', `${stats.responseRate}%`, 'amber'],
+            ['INTERVIEW', `${stats.interviewRate}%`, 'cyan'],
+            ['OFFERS', String(stats.offers).padStart(2, '0'), 'lime'],
+          ] as const).map(([label, value, tone]) => (
+            <div key={label} style={{
+              border: `1px solid ${T.br0}`,
+              background: T.bg1,
+              height: 66,
+              padding: '8px 4px 7px',
+              minWidth: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+            }}>
+              <div style={{
+                fontFamily: 'var(--mono)',
+                fontSize: 8.5,
+                fontWeight: 600,
+                letterSpacing: '0.06em',
+                color: T.fg3,
+                textAlign: 'center',
+                whiteSpace: 'nowrap',
+              }}>{label}</div>
+              <div style={{
+                fontFamily: 'var(--mono)',
+                fontSize: value.includes('%') ? 17 : 19,
+                lineHeight: 1,
+                fontWeight: 500,
+                fontVariantNumeric: 'tabular-nums',
+                color: tone === 'amber' ? T.followup : tone === 'cyan' ? T.interview : tone === 'lime' ? T.offer : T.fg0,
+                textAlign: 'center',
+                whiteSpace: 'nowrap',
+              }}>{value}</div>
+            </div>
+          ))}
+        </div>
+        <TodoPanel apps={apps} expand code="01" />
+        <UpcomingPanel apps={apps} expand code="02" />
+        <PipelinePanel apps={apps} expand code="03" />
+        <MiddleColumn apps={apps} total={stats.total} expand codes={{ distribution: '04', sources: '05', activity: '06' }} />
+      </div>
+    );
+  }
+
+  if (isCompactDesktop) {
+    return (
+      <div style={{
+        flex: 1,
+        minHeight: 0,
+        overflow: 'auto',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+        gridAutoRows: 'max-content',
+        alignContent: 'start',
+        gap: 1,
+        background: T.br0,
+        padding: 1,
+        WebkitOverflowScrolling: 'touch',
+      }}>
+        <div style={{
+          gridColumn: '1 / -1', background: T.bg1,
+          padding: '14px 18px', display: 'grid',
+          gridTemplateColumns: isKpiCompact ? 'repeat(3, minmax(0, 1fr))' : 'repeat(6, minmax(0, 1fr))',
+          gap: isKpiCompact ? '14px 18px' : 24,
+        }}>
+          <Metric label="TOTAL APPS"  value={String(stats.total).padStart(3, '0')}  sub={`${stats.total - stats.sent} draft`} />
+          <Metric label="SENT"        value={String(stats.sent).padStart(3, '0')}   sub={`${stats.responses} replies`} />
+          <Metric label="RESPONSE %"  value={`${stats.responseRate}%`}              sub={`${stats.responses} replies`}  tone="amber" />
+          <Metric label="INTERVIEW %" value={`${stats.interviewRate}%`}             sub={`${stats.interviews} active`} tone="cyan" />
+          <Metric label="OFFERS"      value={String(stats.offers).padStart(2, '0')} sub="deciding"                     tone="lime" />
+          <Metric label="REJECTED"    value={String(apps.filter(a => a.status === 'rejected').length).padStart(2, '0')} sub="ghosted or refused" tone="red" />
+        </div>
+
+        <PipelinePanel apps={apps} expand style={{ gridColumn: '1 / -1', gridRow: 'auto' }} />
+        <DistributionPanel apps={apps} total={stats.total} expand />
+        <SourcesPanel apps={apps} expand />
+        <TodoPanel apps={apps} expand />
+        <UpcomingPanel apps={apps} expand />
+        <ActivityPanel apps={apps} expand style={{ gridColumn: '1 / -1' }} />
+      </div>
+    );
+  }
+
   return (
     <div style={{
       display: 'grid',
@@ -394,7 +556,8 @@ export function DashboardView({ apps }: { apps: Application[] }) {
       <div style={{
         gridColumn: '1 / -1', background: T.bg1,
         padding: '14px 18px', display: 'grid',
-        gridTemplateColumns: 'repeat(6, 1fr)', gap: 24,
+        gridTemplateColumns: 'repeat(6, minmax(0, 1fr))',
+        gap: 24,
       }}>
         <Metric label="TOTAL APPS"  value={String(stats.total).padStart(3, '0')}  sub={`${stats.total - stats.sent} draft`} />
         <Metric label="SENT"        value={String(stats.sent).padStart(3, '0')}   sub={`${stats.responses} replies`} />
@@ -408,7 +571,10 @@ export function DashboardView({ apps }: { apps: Application[] }) {
       <MiddleColumn apps={apps} total={stats.total} />
 
       {/* Right column — Today + Upcoming stacked */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 1, background: T.br0 }}>
+      <div style={{
+        display: 'flex', flexDirection: 'column', gap: 1, background: T.br0,
+        minHeight: 0,
+      }}>
         <TodoPanel apps={apps} />
         <UpcomingPanel apps={apps} />
       </div>

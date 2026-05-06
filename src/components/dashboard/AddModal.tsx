@@ -212,21 +212,22 @@ export function AddModal({ open, onClose, onAdd, onUpdate, totalApps, initialSta
     try {
       const stage = form.interviewStage || undefined;
       const iDate = form.interviewDate ? new Date(form.interviewDate).toISOString() : undefined;
+      const sentAt = form.status === 'draft'
+        ? undefined
+        : form.sentAt ? new Date(form.sentAt).toISOString() : new Date().toISOString();
       if (isEdit) {
         await onUpdate(editApp.id, {
           ...form,
           interviewStage: stage as InterviewStage | undefined,
           interviewDate: iDate,
-          sentAt: form.sentAt ? new Date(form.sentAt).toISOString() : undefined,
+          sentAt,
         });
       } else {
         await onAdd({
           ...form,
           interviewStage: stage as InterviewStage | undefined,
           interviewDate: iDate,
-          sentAt: form.sentAt
-            ? new Date(form.sentAt).toISOString()
-            : form.status !== 'draft' ? new Date().toISOString() : undefined,
+          sentAt,
         });
       }
       onClose();
@@ -316,12 +317,20 @@ export function AddModal({ open, onClose, onAdd, onUpdate, totalApps, initialSta
             ]} />
           <div>
             <FieldLabel>SENT DATE</FieldLabel>
-            <input type="date" value={form.sentAt} onChange={e => set('sentAt', e.target.value)} style={{
-              width: '100%', background: T.bg0, border: `1px solid ${T.br1}`,
-              color: form.sentAt ? T.fg0 : T.fg3, fontFamily: 'var(--mono)', fontSize: 11,
-              padding: '6px 9px', outline: 'none', height: 28,
-              colorScheme: 'dark',
-            }} />
+            <input
+              type={form.status === 'draft' ? 'text' : 'date'}
+              value={form.status === 'draft' ? 'jj/mm/aaaa' : form.sentAt}
+              onChange={e => form.status !== 'draft' && set('sentAt', e.target.value)}
+              disabled={form.status === 'draft'}
+              style={{
+                width: '100%', background: T.bg0, border: `1px solid ${T.br1}`,
+                color: form.status === 'draft' ? T.fg3 : form.sentAt ? T.fg0 : T.fg3,
+                fontFamily: 'var(--mono)', fontSize: 11,
+                padding: '6px 9px', outline: 'none', height: 28,
+                colorScheme: 'dark', cursor: form.status === 'draft' ? 'not-allowed' : 'auto',
+                opacity: form.status === 'draft' ? 0.5 : 1,
+              }}
+            />
           </div>
           <SelectField label="PRIORITY" value={form.priority} onChange={v => set('priority', v)}
             options={[

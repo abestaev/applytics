@@ -10,34 +10,91 @@ import { ListView } from '@/components/dashboard/ListView';
 import { BoardView } from '@/components/dashboard/BoardView';
 import { StatsView } from '@/components/dashboard/StatsView';
 import { AddModal } from '@/components/dashboard/AddModal';
+import { ImportCsvModal } from '@/components/dashboard/ImportCsvModal';
 import { useApplications } from '@/hooks/useApplications';
-import type { ViewType } from '@/types/dashboard';
+import type { NewApplication } from '@/hooks/useApplications';
+import { useIsMobile } from '@/hooks/useIsMobile';
+import type { Application, ViewType } from '@/types/dashboard';
+
+const CSV_COLUMNS: { key: keyof Application; label: string }[] = [
+  { key: 'id', label: 'id' },
+  { key: 'company', label: 'company' },
+  { key: 'role', label: 'role' },
+  { key: 'status', label: 'status' },
+  { key: 'source', label: 'source' },
+  { key: 'loc', label: 'location' },
+  { key: 'remote', label: 'mode' },
+  { key: 'salary', label: 'salary' },
+  { key: 'contact', label: 'contact' },
+  { key: 'priority', label: 'priority' },
+  { key: 'link', label: 'link' },
+  { key: 'notes', label: 'notes' },
+  { key: 'sentAt', label: 'sent_at' },
+  { key: 'type', label: 'type' },
+  { key: 'interviewStage', label: 'interview_stage' },
+  { key: 'interviewDate', label: 'interview_date' },
+];
+
+function csvCell(value: unknown) {
+  const text = value == null ? '' : String(value);
+  return `"${text.replace(/"/g, '""')}"`;
+}
 
 function AppShell({ user }: { user: User }) {
   const [view, setView]         = useState<ViewType>('dash');
   const [query, setQuery]       = useState('');
   const [addOpen, setAddOpen]   = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [editApp, setEditApp]   = useState<import('@/types/dashboard').Application | undefined>(undefined);
+  const isMobile = useIsMobile();
+  const activeView = isMobile && (view === 'board' || view === 'stats') ? 'dash' : view;
 
   const { apps, loading, add, update, updateStatus, remove, syncStatus } = useApplications();
 
   const signOut = () => supabase.auth.signOut();
+  const exportCsv = () => {
+    const header = CSV_COLUMNS.map(c => csvCell(c.label)).join(',');
+    const rows = apps.map(app => CSV_COLUMNS.map(c => csvCell(app[c.key])).join(','));
+    const blob = new Blob([[header, ...rows].join('\n')], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `applytics-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+  const importCsv = async (values: NewApplication[]) => {
+    for (const value of values) {
+      await add(value);
+    }
+  };
 
   return (
     <div style={{
       display: 'flex', flexDirection: 'column',
-      height: '100vh', background: T.bg0, overflow: 'hidden',
+      minHeight: isMobile ? '100dvh' : undefined,
+      height: isMobile ? 'auto' : '100vh',
+      background: T.bg0,
+      overflow: isMobile ? 'visible' : 'hidden',
     }}>
       <AppBar
-        view={view} onView={setView}
+        view={activeView} onView={setView}
         query={query} onQuery={setQuery}
         onAdd={() => setAddOpen(true)}
         userEmail={user.email}
         onSignOut={signOut}
         syncStatus={syncStatus}
+        mobileOnly={isMobile}
+        onExportCsv={exportCsv}
+        onImportCsv={() => setImportOpen(true)}
       />
 
-      <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <div style={{
+        flex: 1,
+        minHeight: isMobile ? undefined : 0,
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
         {loading ? (
           <div style={{
             flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -45,28 +102,15 @@ function AppShell({ user }: { user: User }) {
           }}>LOADING…</div>
         ) : (
           <>
-            {view === 'dash'  && <DashboardView apps={apps} />}
-            {view === 'list'  && <ListView apps={apps} query={query} onEdit={app => { setEditApp(app); setAddOpen(true); }} onDelete={remove} />}
-            {view === 'board' && <BoardView apps={apps} onStatusChange={updateStatus} onAdd={() => { setEditApp(undefined); setAddOpen(true); }} />}
-            {view === 'stats' && <StatsView apps={apps} />}
+            {activeView === 'dash'  && <DashboardView apps={apps} />}
+            {activeView === 'list'  && <ListView apps={apps} query={query} onEdit={app => { setEditApp(app); setAddOpen(true); }} onDelete={remove} />}
+            {activeView === 'board' && <BoardView apps={apps} onStatusChange={updateStatus} onAdd={() => { setEditApp(undefined); setAddOpen(true); }} />}
+            {activeView === 'stats' && <StatsView apps={apps} />}
           </>
         )}
       </div>
 
       <StatusBar filtered={apps.length} total={apps.length} />
-
-      <button
-        onClick={() => setAddOpen(true)}
-        title="New application (N)"
-        style={{
-          position: 'fixed', bottom: 36, right: 20,
-          width: 36, height: 36, borderRadius: '50%',
-          background: T.accent, border: 'none', color: '#0a0b0d',
-          fontSize: 20, fontWeight: 700, lineHeight: 1,
-          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: `0 0 20px ${T.accent}66`, zIndex: 10,
-        }}
-      >+</button>
 
       <AddModal
         open={addOpen}
@@ -75,6 +119,12 @@ function AppShell({ user }: { user: User }) {
         onUpdate={update}
         totalApps={apps.length}
         editApp={editApp}
+      />
+
+      <ImportCsvModal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        onImport={importCsv}
       />
     </div>
   );

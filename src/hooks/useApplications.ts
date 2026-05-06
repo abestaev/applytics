@@ -6,7 +6,7 @@ import type { Application, AppType, InterviewStage, StatusType, SyncStatus } fro
 function rowToApp(row: Record<string, unknown>): Application {
   const now = Date.now();
   const toDays = (ts: unknown) =>
-    ts ? Math.floor((now - new Date(ts as string).getTime()) / 86_400_000) : 0;
+    ts ? (now - new Date(ts as string).getTime()) / 86_400_000 : 0;
 
   return {
     id:        row.id as string,
@@ -74,7 +74,10 @@ export function useApplications() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { void fetch(); }, [fetch]);
+  useEffect(() => {
+    const id = window.setTimeout(() => { void fetch(); }, 0);
+    return () => window.clearTimeout(id);
+  }, [fetch]);
 
   const add = async (values: NewApplication) => {
     setSyncStatus(isOffline() ? 'offline' : 'loading');

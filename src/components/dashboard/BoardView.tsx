@@ -14,6 +14,8 @@ import { CSS } from '@dnd-kit/utilities';
 import { T } from '@/tokens';
 import { STATUS_META, STATUS_ORDER } from '@/data/mockData';
 import { StatusDot, CodeTag } from './Primitives';
+import { formatDays } from '@/utils/stats';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import type { Application, StatusType } from '@/types/dashboard';
 
 const COLS = STATUS_ORDER as StatusType[];
@@ -50,7 +52,7 @@ function Card({ app, isDragging = false }: { app: Application; isDragging?: bool
         <span style={{
           color: app.lastDays > 14 ? T.rejected : app.lastDays > 7 ? T.followup : T.fg3,
         }}>
-          {app.lastDays === 0 ? 'now' : `${app.lastDays}d`}
+          {formatDays(app.lastDays)}
         </span>
       </div>
       {app.status === 'interview' && app.interviewDate && (
@@ -162,6 +164,7 @@ export function BoardView({ apps: initialApps, onStatusChange, onAdd }: {
 }) {
   const [apps, setApps] = useState<Application[]>(initialApps);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const isCompactDesktop = useIsMobile(1200);
 
   useEffect(() => { setApps(initialApps); }, [initialApps]);
 
@@ -192,7 +195,10 @@ export function BoardView({ apps: initialApps, onStatusChange, onAdd }: {
     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div style={{
         flex: 1, minHeight: 0,
-        padding: 12, display: 'flex', gap: 10,
+        padding: isCompactDesktop ? 10 : 12,
+        display: 'grid',
+        gridTemplateColumns: `repeat(${COLS.length}, minmax(${isCompactDesktop ? 180 : 200}px, 1fr))`,
+        gap: isCompactDesktop ? 8 : 10,
         overflow: 'auto', background: T.bg0,
       }}>
         {COLS.map(s => (
