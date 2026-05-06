@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { T } from '@/tokens';
-import { AuthPage } from '@/components/auth/AuthPage';
+import { AuthPage, TermsPrivacyModal } from '@/components/auth/AuthPage';
 import { AppBar } from '@/components/dashboard/AppBar';
 import { StatusBar } from '@/components/dashboard/StatusBar';
 import { DashboardView } from '@/components/dashboard/DashboardView';
@@ -13,6 +13,7 @@ import { AddModal } from '@/components/dashboard/AddModal';
 import { ImportCsvModal } from '@/components/dashboard/ImportCsvModal';
 import { useApplications } from '@/hooks/useApplications';
 import type { NewApplication } from '@/hooks/useApplications';
+import { useTermsAcceptance } from '@/hooks/useTermsAcceptance';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import type { Application, ViewType } from '@/types/dashboard';
 
@@ -45,10 +46,17 @@ function AppShell({ user }: { user: User }) {
   const [query, setQuery]       = useState('');
   const [addOpen, setAddOpen]   = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
   const [editApp, setEditApp]   = useState<import('@/types/dashboard').Application | undefined>(undefined);
   const isMobile = useIsMobile();
   const activeView = isMobile && (view === 'board' || view === 'stats') ? 'dash' : view;
 
+  const {
+    accepted: termsAccepted,
+    acceptTerms,
+    error: termsError,
+    loading: termsLoading,
+  } = useTermsAcceptance(user.id);
   const { apps, loading, add, update, updateStatus, remove, syncStatus } = useApplications();
 
   const signOut = () => supabase.auth.signOut();
@@ -69,6 +77,27 @@ function AppShell({ user }: { user: User }) {
     }
   };
 
+  if (termsLoading) {
+    return (
+      <div style={{
+        height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: T.bg0, fontFamily: 'var(--mono)', fontSize: 11,
+        color: T.fg3, letterSpacing: '0.1em',
+      }}>LOADING TERMS...</div>
+    );
+  }
+
+  if (!termsAccepted) {
+    return (
+      <div style={{ minHeight: '100vh', background: T.bg0 }}>
+        <TermsPrivacyModal
+          onAccept={() => { void acceptTerms(); }}
+          error={termsError}
+        />
+      </div>
+    );
+  }
+
   return (
     <div style={{
       display: 'flex', flexDirection: 'column',
@@ -87,6 +116,7 @@ function AppShell({ user }: { user: User }) {
         mobileOnly={isMobile}
         onExportCsv={exportCsv}
         onImportCsv={() => setImportOpen(true)}
+        onTermsPrivacy={() => setTermsOpen(true)}
       />
 
       <div style={{
@@ -126,6 +156,8 @@ function AppShell({ user }: { user: User }) {
         onClose={() => setImportOpen(false)}
         onImport={importCsv}
       />
+
+      {termsOpen && <TermsPrivacyModal onClose={() => setTermsOpen(false)} />}
     </div>
   );
 }

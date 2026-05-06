@@ -15,6 +15,7 @@ Applytics includes:
 - CSV import with template, validation, preview, and valid-row-only import.
 - CSV export from the Stats page.
 - Supabase authentication and persistence.
+- Terms & Privacy acceptance stored per user.
 
 ## Stack
 

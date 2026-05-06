@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { T } from '@/tokens';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { clearPendingTermsAcceptance, rememberPendingTermsAcceptance } from '@/hooks/useTermsAcceptance';
 
 type Mode = 'login' | 'signup';
 
@@ -17,6 +18,41 @@ const lbl = {
   color: T.fg3, letterSpacing: '0.1em',
   display: 'block', marginBottom: 6,
 } as const;
+
+const TERMS_SECTIONS = [
+  {
+    title: 'Purpose',
+    body: 'Applytics is a private tool for tracking job applications, interviews, follow-ups, notes, and related CSV imports/exports.',
+  },
+  {
+    title: 'Account',
+    body: 'You are responsible for keeping your account credentials secure. Access is intended for invited or approved users only.',
+  },
+  {
+    title: 'Data Stored',
+    body: 'The app may store your email address, application details, company names, roles, contacts, links, notes, statuses, dates, interview information, settings, and imported CSV content.',
+  },
+  {
+    title: 'CSV Import And Export',
+    body: 'You are responsible for the files you import and export. Review CSV previews before importing, and avoid uploading information you do not want stored in the app.',
+  },
+  {
+    title: 'Privacy',
+    body: 'Application data is intended to remain private to each authenticated user. Data is stored in Supabase and protected by the project database configuration and access rules.',
+  },
+  {
+    title: 'Deletion',
+    body: 'If you need account or application data deleted, contact the project owner or remove the relevant records directly if you administer the Supabase project.',
+  },
+  {
+    title: 'No Warranty',
+    body: 'Applytics is provided as a personal project. It is offered as-is, without guarantees of availability, correctness, or fitness for a specific purpose.',
+  },
+  {
+    title: 'Contact',
+    body: 'For questions about access, privacy, or data deletion, contact the project owner.',
+  },
+];
 
 // ── Mock data ────────────────────────────────────────────────────────────────
 
@@ -82,6 +118,160 @@ function SectionHeader({ num, label, meta }: { num: string; label: string; meta:
       <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: T.fg3, fontWeight: 500 }}>{num}</span>
       <span style={{ fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.16em', color: T.accent }}>{label}</span>
       <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: T.fg3, letterSpacing: '0.1em' }}>{meta}</span>
+    </div>
+  );
+}
+
+function TermsLink({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        background: 'none',
+        border: 'none',
+        padding: 0,
+        marginTop: 16,
+        fontFamily: 'var(--mono)',
+        fontSize: 10,
+        color: T.fg3,
+        cursor: 'pointer',
+        letterSpacing: '0.04em',
+      }}
+    >
+      Terms & Privacy
+    </button>
+  );
+}
+
+export function TermsPrivacyModal({ onClose, onAccept, accepting = false, error }: {
+  onClose?: () => void;
+  onAccept?: () => void;
+  accepting?: boolean;
+  error?: string | null;
+}) {
+  const close = onClose ?? (() => undefined);
+
+  return (
+    <div onClick={onClose ? close : undefined} style={{
+      position: 'fixed', inset: 0, zIndex: 200,
+      background: 'rgba(8,9,11,.76)',
+      backdropFilter: 'blur(6px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: 20,
+      height: '100dvh',
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        width: 'min(680px, 100%)',
+        maxHeight: 'min(760px, calc(100dvh - 40px))',
+        background: T.bg1,
+        border: `1px solid ${T.br2}`,
+        boxShadow: '0 24px 70px rgba(0,0,0,.6)',
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
+        <div style={{
+          padding: '13px 16px',
+          borderBottom: `1px solid ${T.br0}`,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+        }}>
+          <span style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: T.accent, letterSpacing: '0.12em' }}>
+            TERMS
+          </span>
+          <span style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: T.fg0, letterSpacing: '0.08em' }}>
+            TERMS & PRIVACY
+          </span>
+          <span style={{ flex: 1 }} />
+          {onClose && <button onClick={onClose} style={{
+            background: 'none',
+            border: 'none',
+            color: T.fg2,
+            cursor: 'pointer',
+            fontSize: 16,
+            lineHeight: 1,
+          }}>x</button>}
+        </div>
+
+        <div style={{
+          padding: 18,
+          overflow: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 14,
+          fontFamily: 'var(--mono)',
+        }}>
+          <div style={{
+            color: T.fg2,
+            fontSize: 10.5,
+            lineHeight: 1.6,
+            padding: '10px 12px',
+            background: T.bg0,
+            border: `1px solid ${T.br0}`,
+          }}>
+            Last updated: May 6, 2026. This notice is written for a private personal project, not a public commercial service.
+          </div>
+
+          {TERMS_SECTIONS.map(section => (
+            <section key={section.title}>
+              <h2 style={{
+                margin: '0 0 6px',
+                fontFamily: 'var(--mono)',
+                fontSize: 10.5,
+                color: T.fg0,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+              }}>
+                {section.title}
+              </h2>
+              <p style={{
+                margin: 0,
+                fontFamily: 'var(--mono)',
+                fontSize: 10.5,
+                color: T.fg2,
+                lineHeight: 1.6,
+              }}>
+                {section.body}
+              </p>
+            </section>
+          ))}
+        </div>
+
+        {onAccept && (
+          <div style={{
+            padding: '12px 16px',
+            borderTop: `1px solid ${T.br0}`,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+          }}>
+            {error && (
+              <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: T.rejected }}>
+                {error}
+              </span>
+            )}
+            <span style={{ flex: 1 }} />
+            <button
+              onClick={onAccept}
+              disabled={accepting}
+              style={{
+                background: accepting ? T.bg3 : T.accent,
+                border: 'none',
+                color: accepting ? T.fg3 : '#0a0b0d',
+                fontFamily: 'var(--mono)',
+                fontSize: 10.5,
+                fontWeight: 700,
+                letterSpacing: '0.08em',
+                padding: '7px 14px',
+                cursor: accepting ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {accepting ? 'ACCEPTING...' : 'ACCEPT TERMS'}
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -310,6 +500,8 @@ export function AuthPage() {
   const [showPwd, setShowPwd]   = useState(false);
   const [error, setError]       = useState<string | null>(null);
   const [loading, setLoading]   = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const switchMode = (m: Mode) => { setMode(m); setError(null); setConfirm(''); };
 
@@ -322,21 +514,70 @@ export function AuthPage() {
     setLoading(true);
     try {
       if (mode === 'signup') {
-        const { error } = await supabase.auth.signUp({ email, password });
+        rememberPendingTermsAcceptance();
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { accepted_terms_at: new Date().toISOString() },
+          },
+        });
         if (error) throw error;
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       }
     } catch (e: unknown) {
+      if (mode === 'signup') clearPendingTermsAcceptance();
       setError(e instanceof Error ? e.message : 'An error occurred.');
     } finally {
       setLoading(false);
     }
   };
 
-  const canSubmit = !loading && !!email && !!password && (mode === 'login' || !!confirm);
+  const canSubmit = !loading
+    && !!email
+    && !!password
+    && (mode === 'login' || (!!confirm && acceptedTerms));
+  const canUseGoogle = !loading;
   const isMobile = useIsMobile(1100);
+  const termsCheckbox = (
+    <div style={{
+      display: 'flex',
+      alignItems: 'flex-start',
+      gap: 8,
+      fontFamily: 'var(--mono)',
+      fontSize: 10.5,
+      color: T.fg2,
+      lineHeight: 1.45,
+    }}>
+      <input
+        type="checkbox"
+        checked={acceptedTerms}
+        onChange={e => setAcceptedTerms(e.target.checked)}
+        style={{ accentColor: T.accent, width: 13, height: 13, cursor: 'pointer', marginTop: 2, flexShrink: 0 }}
+      />
+      <span>
+        I accept the{' '}
+        <button
+          type="button"
+          onClick={() => setTermsOpen(true)}
+          style={{
+            background: 'none',
+            border: 'none',
+            padding: 0,
+            color: T.accent,
+            fontFamily: 'var(--mono)',
+            fontSize: 10.5,
+            cursor: 'pointer',
+          }}
+        >
+          Terms & Privacy
+        </button>
+        .
+      </span>
+    </div>
+  );
 
   if (isMobile) {
     return (
@@ -433,6 +674,7 @@ export function AuthPage() {
                   Remember me
                 </label>
               )}
+              {mode === 'signup' && termsCheckbox}
               {error && (
                 <div style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: T.rejected, padding: '9px 12px', background: `${T.rejected}12`, border: `1px solid ${T.rejected}30` }}>{error}</div>
               )}
@@ -448,14 +690,16 @@ export function AuthPage() {
                 <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: T.fg3 }}>OR</span>
                 <div style={{ flex: 1, height: 1, background: T.br1 }} />
               </div>
-              <button onClick={async () => {
+              <button disabled={!canUseGoogle} onClick={async () => {
                 setError(null);
                 const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } });
-                if (error) setError(error.message);
+                if (error) {
+                  setError(error.message);
+                }
               }} style={{
-                background: T.bg2, border: `1px solid ${T.br2}`, color: T.fg0,
+                background: canUseGoogle ? T.bg2 : T.bg3, border: `1px solid ${T.br2}`, color: canUseGoogle ? T.fg0 : T.fg3,
                 fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 500,
-                letterSpacing: '0.06em', padding: '12px', cursor: 'pointer', width: '100%',
+                letterSpacing: '0.06em', padding: '12px', cursor: canUseGoogle ? 'pointer' : 'not-allowed', width: '100%',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
               }}>
                 <svg width="16" height="16" viewBox="0 0 24 24">
@@ -468,8 +712,8 @@ export function AuthPage() {
               </button>
             </div>
           </div>
-          <div style={{ marginTop: 16, fontFamily: 'var(--mono)', fontSize: 10, color: T.fg3, textAlign: 'center' }}>
-            Track your job applications · v2.0
+          <div style={{ textAlign: 'center' }}>
+            <TermsLink onClick={() => setTermsOpen(true)} />
           </div>
         </div>
 
@@ -484,6 +728,7 @@ export function AuthPage() {
           </p>
           <Preview inline />
         </div>
+        {termsOpen && <TermsPrivacyModal onClose={() => setTermsOpen(false)} />}
       </div>
     );
   }
@@ -615,6 +860,7 @@ export function AuthPage() {
                 Remember me
               </label>
             )}
+            {mode === 'signup' && termsCheckbox}
 
             {error && (
               <div style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: T.rejected, padding: '9px 12px', background: `${T.rejected}12`, border: `1px solid ${T.rejected}30` }}>
@@ -636,14 +882,16 @@ export function AuthPage() {
               <div style={{ flex: 1, height: 1, background: T.br1 }} />
             </div>
 
-            <button onClick={async () => {
+            <button disabled={!canUseGoogle} onClick={async () => {
               setError(null);
               const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } });
-              if (error) setError(error.message);
+              if (error) {
+                setError(error.message);
+              }
             }} style={{
-              background: T.bg2, border: `1px solid ${T.br2}`, color: T.fg0,
+              background: canUseGoogle ? T.bg2 : T.bg3, border: `1px solid ${T.br2}`, color: canUseGoogle ? T.fg0 : T.fg3,
               fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 500,
-              letterSpacing: '0.06em', padding: '10px', cursor: 'pointer', width: '100%',
+              letterSpacing: '0.06em', padding: '10px', cursor: canUseGoogle ? 'pointer' : 'not-allowed', width: '100%',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
             }}>
               <svg width="16" height="16" viewBox="0 0 24 24">
@@ -657,10 +905,10 @@ export function AuthPage() {
           </div>
         </div>
 
-        <div style={{ marginTop: 16, fontFamily: 'var(--mono)', fontSize: 10, color: T.fg3 }}>
-          Track your job applications · v2.0
-        </div>
+        <TermsLink onClick={() => setTermsOpen(true)} />
       </div>
+
+      {termsOpen && <TermsPrivacyModal onClose={() => setTermsOpen(false)} />}
     </div>
   );
 }

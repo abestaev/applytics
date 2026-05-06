@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { T } from '@/tokens';
 
 import { ToolBtn } from './Primitives';
@@ -17,6 +17,7 @@ interface AppBarProps {
   mobileOnly?: boolean;
   onExportCsv?: () => void;
   onImportCsv?: () => void;
+  onTermsPrivacy?: () => void;
 }
 
 const VIEWS: [string, ViewType][] = [
@@ -33,8 +34,18 @@ const SYNC_META: Record<SyncStatus, { label: string; color: string; title: strin
   error:   { label: 'ERR',  color: T.rejected, title: 'Erreur de synchronisation' },
 };
 
-export function AppBar({ view, onView, query, onQuery, onAdd, userEmail, onSignOut, syncStatus, mobileOnly = false, onExportCsv, onImportCsv }: AppBarProps) {
+export function AppBar({ view, onView, query, onQuery, onAdd, userEmail, onSignOut, syncStatus, mobileOnly = false, onExportCsv, onImportCsv, onTermsPrivacy }: AppBarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [menuOpen]);
   const time = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', hour12: false });
   const sync = SYNC_META[syncStatus];
   const views = mobileOnly ? VIEWS.filter(([, v]) => v === 'dash' || v === 'list') : VIEWS;
@@ -86,7 +97,7 @@ export function AppBar({ view, onView, query, onQuery, onAdd, userEmail, onSignO
           }}
         >+ NEW</button>
 
-        <div style={{ position: 'relative', flexShrink: 0 }}>
+        <div ref={menuRef} style={{ position: 'relative', flexShrink: 0 }}>
           <button
             onClick={() => setMenuOpen(v => !v)}
             aria-expanded={menuOpen}
@@ -136,6 +147,26 @@ export function AppBar({ view, onView, query, onQuery, onAdd, userEmail, onSignO
                   {view === v && <span style={{ color: T.accent }}>ON</span>}
                 </button>
               ))}
+              {onTermsPrivacy && (
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onTermsPrivacy();
+                  }}
+                  style={{
+                    width: '100%',
+                    background: 'transparent',
+                    border: 'none',
+                    borderBottom: `1px solid ${T.br0}`,
+                    color: T.fg1,
+                    fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 600,
+                    letterSpacing: '0.08em',
+                    padding: '11px 12px',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                  }}
+                >TERMS</button>
+              )}
               {userEmail && (
                 <button
                   onClick={() => {
@@ -273,6 +304,18 @@ export function AppBar({ view, onView, query, onQuery, onAdd, userEmail, onSignO
         <span title={sync.title}>
           <span style={{ color: T.fg3 }}>NET</span> <span style={{ color: sync.color }}>●</span> {sync.label}
         </span>
+        {onTermsPrivacy && (
+          <button
+            onClick={onTermsPrivacy}
+            title="Terms & Privacy"
+            style={{
+              background: 'none', border: `1px solid ${T.br1}`,
+              color: T.fg3, fontFamily: 'var(--mono)', fontSize: 9.5,
+              letterSpacing: '0.06em', padding: '2px 7px',
+              cursor: 'pointer', borderRadius: 2,
+            }}
+          >TERMS</button>
+        )}
         {userEmail && (
           <button
             onClick={onSignOut}
