@@ -35,7 +35,7 @@ export function StatsView({ apps }: { apps: Application[] }) {
         flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontFamily: 'var(--mono)', fontSize: 11, color: T.fg3, letterSpacing: '0.08em',
       }}>
-        Aucune donnée — ajoute des candidatures pour voir les stats
+        No data — add applications to see stats
       </div>
     );
   }
@@ -87,7 +87,7 @@ export function StatsView({ apps }: { apps: Application[] }) {
       <Panel code="B" title="Source efficacy" expand={isCompact}>
         <div style={{ padding: '14px 18px' }}>
           {sourceRows.length === 0 ? (
-            <span style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: T.fg3 }}>Aucune source</span>
+            <span style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: T.fg3 }}>No source</span>
           ) : (
             <table style={{ width: '100%', fontFamily: 'var(--mono)', fontSize: 10.5, borderCollapse: 'collapse' }}>
               <thead>

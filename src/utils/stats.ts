@@ -8,7 +8,7 @@ export function formatDays(days: number): string {
 
 export function computeStats(apps: Application[]) {
   const sent      = apps.filter(a => a.status !== 'draft').length;
-  const responses = apps.filter(a => ['interview','offer','rejected','followup'].includes(a.status)).length;
+  const responses = apps.filter(a => ['interview','offer','rejected'].includes(a.status)).length;
   const interviews= apps.filter(a => ['interview','offer'].includes(a.status)).length;
   const offers    = apps.filter(a => a.status === 'offer').length;
   return {

@@ -125,7 +125,7 @@ function parseStatus(value: string, errors: string[]) {
   if (!value) return 'sent';
   const status = STATUS_ALIASES[normalizeValue(value)];
   if (status) return status;
-  errors.push(`status "${value}" inconnu. Valeurs acceptées: ${STATUS_ORDER.join(', ')}.`);
+  errors.push(`status "${value}" unknown. Accepted values: ${STATUS_ORDER.join(', ')}.`);
   return 'sent';
 }
 
@@ -138,7 +138,7 @@ function parseInterviewStage(value: string, errors: string[]) {
   if (!value) return undefined;
   const stage = INTERVIEW_STAGE_ALIASES[normalizeValue(value)];
   if (stage) return stage;
-  errors.push(`interview_stage "${value}" inconnu.`);
+  errors.push(`interview_stage "${value}" unknown.`);
   return undefined;
 }
 
@@ -160,7 +160,7 @@ function parseDate(value: string, errors: string[], field: string) {
     : trimmed;
   const date = new Date(normalized);
   if (Number.isNaN(date.getTime())) {
-    errors.push(`${field} "${value}" invalide. Format conseillé: YYYY-MM-DD.`);
+    errors.push(`${field} "${value}" invalid. Recommended format: YYYY-MM-DD.`);
     return undefined;
   }
   return isoLike && trimmed.includes('T') ? date.toISOString() : new Date(`${normalized}T00:00:00`).toISOString();
@@ -180,10 +180,10 @@ function rowToApplication(row: CsvRow, index: number): ParsedRow {
     ? undefined
     : parseDate(valueFor(row, FIELD_ALIASES.sentAt), errors, 'sent_at') ?? new Date().toISOString();
 
-  if (!company) errors.push('company manquant.');
-  if (!role) errors.push('role manquant.');
+  if (!company) errors.push('company missing.');
+  if (!role) errors.push('role missing.');
   if (status === 'interview' && !interviewDate && interviewStage) {
-    errors.push('interview_date manquant alors que interview_stage est renseigné.');
+    errors.push('interview_date missing while interview_stage is set.');
   }
 
   const app: NewApplication = {
@@ -252,7 +252,7 @@ export function ImportCsvModal({ open, onClose, onImport }: ImportCsvModalProps)
       transformHeader: header => header.trim(),
       complete: result => {
         if (result.errors.length > 0) {
-          setError(result.errors[0]?.message ?? 'CSV illisible.');
+          setError(result.errors[0]?.message ?? 'CSV unreadable.');
         }
         setRows(result.data.map(rowToApplication));
       },
@@ -269,7 +269,7 @@ export function ImportCsvModal({ open, onClose, onImport }: ImportCsvModalProps)
       reset();
       onClose();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Import impossible.');
+      setError(e instanceof Error ? e.message : 'Import failed.');
     } finally {
       setImporting(false);
     }
@@ -309,8 +309,8 @@ export function ImportCsvModal({ open, onClose, onImport }: ImportCsvModalProps)
           overflow: 'auto', fontFamily: 'var(--mono)',
         }}>
           <div style={{ padding: 12, background: T.bg0, border: `1px solid ${T.br0}`, color: T.fg2, fontSize: 10.5, lineHeight: 1.5 }}>
-            Colonnes requises: <span style={{ color: T.fg0 }}>company</span>, <span style={{ color: T.fg0 }}>role</span>.
-            Les autres sont optionnelles. On accepte aussi des alias comme Company, poste, city, Date, ON GOING ou REFUSED.
+            Required columns: <span style={{ color: T.fg0 }}>company</span>, <span style={{ color: T.fg0 }}>role</span>.
+            Other columns are optional. Aliases like Company, poste, city, Date, ON GOING or REFUSED are also accepted.
           </div>
 
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -335,8 +335,8 @@ export function ImportCsvModal({ open, onClose, onImport }: ImportCsvModalProps)
               display: 'flex', gap: 12, color: T.fg2, fontSize: 10.5,
               padding: '8px 0', borderTop: `1px solid ${T.br0}`, borderBottom: `1px solid ${T.br0}`,
             }}>
-              <span><span style={{ color: T.fg0 }}>{rows.length}</span> lignes détectées</span>
-              <span><span style={{ color: T.offer }}>{validRows.length}</span> prêtes</span>
+              <span><span style={{ color: T.fg0 }}>{rows.length}</span> rows detected</span>
+              <span><span style={{ color: T.offer }}>{validRows.length}</span> ready</span>
               <span><span style={{ color: invalidRows ? T.rejected : T.fg2 }}>{invalidRows}</span> erreurs</span>
             </div>
           )}
@@ -371,7 +371,7 @@ export function ImportCsvModal({ open, onClose, onImport }: ImportCsvModalProps)
               ))}
               {rows.length > 12 && (
                 <div style={{ background: T.bg0, padding: '8px 10px', color: T.fg3, fontSize: 10 }}>
-                  +{rows.length - 12} lignes masquées dans la preview
+                  +{rows.length - 12} rows hidden in preview
                 </div>
               )}
             </div>
@@ -383,7 +383,7 @@ export function ImportCsvModal({ open, onClose, onImport }: ImportCsvModalProps)
           display: 'flex', alignItems: 'center', gap: 8,
         }}>
           <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: T.fg3 }}>
-            Rien n'est écrit avant validation.
+            Nothing is written until confirmed.
           </span>
           <span style={{ flex: 1 }} />
           <ToolBtn onClick={close}>CANCEL</ToolBtn>

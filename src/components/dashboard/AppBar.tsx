@@ -28,10 +28,10 @@ const VIEWS: [string, ViewType][] = [
 ];
 
 const SYNC_META: Record<SyncStatus, { label: string; color: string; title: string }> = {
-  loading: { label: 'LOAD', color: T.followup, title: 'Synchronisation en cours' },
-  synced:  { label: 'SYNC', color: T.offer, title: 'Synchronisé' },
-  offline: { label: 'OFF',  color: T.fg3, title: 'Hors ligne' },
-  error:   { label: 'ERR',  color: T.rejected, title: 'Erreur de synchronisation' },
+  loading: { label: 'LOAD', color: T.followup, title: 'Syncing' },
+  synced:  { label: 'SYNC', color: T.offer, title: 'Synced' },
+  offline: { label: 'OFF',  color: T.fg3, title: 'Offline' },
+  error:   { label: 'ERR',  color: T.rejected, title: 'Sync error' },
 };
 
 export function AppBar({ view, onView, query, onQuery, onAdd, userEmail, onSignOut, syncStatus, mobileOnly = false, onExportCsv, onImportCsv, onTermsPrivacy }: AppBarProps) {
@@ -46,7 +46,7 @@ export function AppBar({ view, onView, query, onQuery, onAdd, userEmail, onSignO
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [menuOpen]);
-  const time = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', hour12: false });
+  const time = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
   const sync = SYNC_META[syncStatus];
   const views = mobileOnly ? VIEWS.filter(([, v]) => v === 'dash' || v === 'list') : VIEWS;
   const userHandle = userEmail?.split('@')[0];
@@ -94,6 +94,7 @@ export function AppBar({ view, onView, query, onQuery, onAdd, userEmail, onSignO
             padding: '7px 9px',
             cursor: 'pointer',
             flexShrink: 0,
+            borderRadius: 2,
           }}
         >+ NEW</button>
 
@@ -295,6 +296,7 @@ export function AppBar({ view, onView, query, onQuery, onAdd, userEmail, onSignO
           fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 700,
           letterSpacing: '0.06em', padding: '3px 10px', height: 24,
           cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4,
+          borderRadius: 2,
         }}
       >+ NEW</button>
 
@@ -319,7 +321,7 @@ export function AppBar({ view, onView, query, onQuery, onAdd, userEmail, onSignO
         {userEmail && (
           <button
             onClick={onSignOut}
-            title="Se déconnecter"
+            title="Sign out"
             style={{
               background: 'none', border: `1px solid ${T.br1}`,
               color: T.fg3, fontFamily: 'var(--mono)', fontSize: 9.5,
