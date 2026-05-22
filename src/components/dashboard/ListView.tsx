@@ -221,8 +221,11 @@ export function ListView({ apps, query = '', selectedApplicationId, onEdit, onDe
 
   useEffect(() => {
     if (!selectedApplicationId) return;
-    setFilter('ALL');
-    setSelected(selectedApplicationId);
+    const frame = window.requestAnimationFrame(() => {
+      setFilter('ALL');
+      setSelected(selectedApplicationId);
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, [selectedApplicationId]);
 
   const filtered = apps.filter(a => {
@@ -339,6 +342,7 @@ export function ListView({ apps, query = '', selectedApplicationId, onEdit, onDe
                 <div
                   ref={el => { rowRefs.current[a.id] = el; }}
                   onClick={() => setSelected(active ? null : a.id)}
+                  onDoubleClick={() => onEdit(a)}
                   role="button"
                   tabIndex={0}
                   onKeyDown={e => {
@@ -492,7 +496,12 @@ export function ListView({ apps, query = '', selectedApplicationId, onEdit, onDe
             </thead>
             <tbody>
               {filtered.map((a, i) => (
-                <tr key={a.id} ref={el => { rowRefs.current[a.id] = el; }} onClick={() => setSelected(a.id)} style={{
+                <tr
+                  key={a.id}
+                  ref={el => { rowRefs.current[a.id] = el; }}
+                  onClick={() => setSelected(a.id)}
+                  onDoubleClick={() => onEdit(a)}
+                  style={{
                   height: 30,
                   background: a.id === effectiveSelected ? T.accentDim : i % 2 ? T.bg1 : T.bg2,
                   color: T.fg1, borderBottom: `1px solid ${T.br0}`, cursor: 'pointer',
