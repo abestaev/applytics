@@ -31,6 +31,7 @@ const CSV_COLUMNS: { key: keyof Application; label: string }[] = [
   { key: 'link', label: 'link' },
   { key: 'notes', label: 'notes' },
   { key: 'sentAt', label: 'sent_at' },
+  { key: 'followupDate', label: 'followup_date' },
   { key: 'type', label: 'type' },
   { key: 'interviewStage', label: 'interview_stage' },
   { key: 'interviewDate', label: 'interview_date' },
@@ -48,6 +49,7 @@ function AppShell({ user }: { user: User }) {
   const [importOpen, setImportOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
   const [editApp, setEditApp]   = useState<import('@/types/dashboard').Application | undefined>(undefined);
+  const [selectedApplicationId, setSelectedApplicationId] = useState<string | null>(null);
   const isMobile = useIsMobile();
   const activeView = isMobile && (view === 'board' || view === 'stats') ? 'dash' : view;
 
@@ -75,6 +77,11 @@ function AppShell({ user }: { user: User }) {
     for (const value of values) {
       await add(value);
     }
+  };
+  const openApplicationInList = (id: string) => {
+    setSelectedApplicationId(id);
+    setQuery('');
+    setView('list');
   };
 
   if (termsLoading) {
@@ -132,8 +139,8 @@ function AppShell({ user }: { user: User }) {
           }}>LOADING…</div>
         ) : (
           <>
-            {activeView === 'dash'  && <DashboardView apps={apps} />}
-            {activeView === 'list'  && <ListView apps={apps} query={query} onEdit={app => { setEditApp(app); setAddOpen(true); }} onDelete={remove} />}
+            {activeView === 'dash'  && <DashboardView apps={apps} onOpenApplication={openApplicationInList} />}
+            {activeView === 'list'  && <ListView apps={apps} query={query} selectedApplicationId={selectedApplicationId} onEdit={app => { setEditApp(app); setAddOpen(true); }} onDelete={remove} />}
             {activeView === 'board' && <BoardView apps={apps} onStatusChange={updateStatus} onAdd={() => { setEditApp(undefined); setAddOpen(true); }} />}
             {activeView === 'stats' && <StatsView apps={apps} />}
           </>

@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { T } from '@/tokens';
 import { STATUS_META, STATUS_ORDER } from '@/data/mockData';
 import { StatusTag, StatusDot, CodeTag, ToolBtn } from './Primitives';
@@ -10,19 +10,37 @@ type SortKey = keyof Application;
 type SortDir = 'asc' | 'desc';
 
 const HEADERS: { k: SortKey; label: string; w: number; right?: boolean }[] = [
-  { k: 'id',       label: 'ID',      w: 80 },
-  { k: 'company',  label: 'COMPANY', w: 130 },
-  { k: 'type',     label: 'TYPE',    w: 80 },
-  { k: 'role',     label: 'ROLE',    w: 220 },
+  { k: 'company',  label: 'COMPANY', w: 110 },
+  { k: 'type',     label: 'TYPE',    w: 70 },
+  { k: 'role',     label: 'ROLE',    w: 190 },
   { k: 'status',   label: 'STATUS',  w: 80 },
-  { k: 'source',   label: 'SOURCE',  w: 140 },
-  { k: 'loc',      label: 'LOC',     w: 90 },
-  { k: 'remote',   label: 'MODE',    w: 70 },
-  { k: 'salary',   label: 'SALARY',  w: 80 },
-  { k: 'sentDays', label: 'SENT',    w: 60, right: true },
-  { k: 'lastDays', label: 'LAST',    w: 60, right: true },
-  { k: 'priority', label: 'P',       w: 32, right: true },
+  { k: 'source',   label: 'SOURCE',  w: 110 },
+  { k: 'loc',      label: 'LOC',     w: 80 },
+  { k: 'remote',   label: 'MODE',    w: 65 },
+  { k: 'salary',   label: 'SALARY',  w: 75 },
+  { k: 'sentDays', label: 'SENT',    w: 55, right: true },
+  { k: 'lastDays', label: 'LAST',    w: 55, right: true },
+  { k: 'priority', label: 'P',       w: 30, right: true },
 ];
+
+const COMPANY_COLUMN_WIDTH = HEADERS.find(h => h.k === 'company')?.w ?? 110;
+
+function formatRelativeDate(value?: string) {
+  if (!value) return '—';
+  const time = new Date(value).getTime();
+  if (Number.isNaN(time)) return '—';
+  const diffMs = Date.now() - time;
+  const absMs = Math.abs(diffMs);
+  const hourMs = 3_600_000;
+  const dayMs = 86_400_000;
+  const valueText = absMs < hourMs
+    ? 'now'
+    : absMs < dayMs
+      ? `${Math.floor(absMs / hourMs)}h`
+      : `${Math.floor(absMs / dayMs)}d`;
+  if (valueText === 'now') return valueText;
+  return diffMs < 0 ? `in ${valueText}` : `${valueText} ago`;
+}
 
 // ── Detail panel ─────────────────────────────────────────────────────────────
 
@@ -58,7 +76,6 @@ function DetailPanel({ app, onEdit, onDelete }: {
       {!isMobile && (
         <div style={{ padding: '14px 16px', borderBottom: `1px solid ${T.br0}`, flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-            <CodeTag tone="accent">{app.id.slice(0, 8)}</CodeTag>
             <span style={{ flex: 1 }} />
             <StatusTag status={app.status} />
             {app.status === 'interview' && app.interviewStage && (
@@ -92,8 +109,11 @@ function DetailPanel({ app, onEdit, onDelete }: {
           ['SALARY',     app.salary],
           ['CONTACT',    app.contact],
           ['SENT',       app.sentDays === 0 ? '—' : `${formatDays(app.sentDays)} ago`],
+          ...(app.status === 'followup' ? [
+            ['FOLLOWUP', formatRelativeDate(app.followupDate)] as [string, string],
+          ] : []),
           ...(app.status === 'interview' && app.interviewDate ? [
-            ['INTERVIEW', new Date(app.interviewDate).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false })] as [string, string],
+            ['INTERVIEW', new Date(app.interviewDate).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false })] as [string, string],
           ] : []),
           ['LAST EVENT', formatDays(app.lastDays)],
         ] as [string, string][]).map(([k, v]) => (
@@ -155,9 +175,9 @@ function DetailPanel({ app, onEdit, onDelete }: {
       <div style={{ padding: '12px 16px', display: 'flex', gap: 6, flexShrink: 0 }}>
         {confirming ? (
           <div data-confirm style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: T.fg2, alignSelf: 'center' }}>Confirmer ?</span>
-            <ToolBtn onClick={() => onDelete(app.id)} style={isMobile ? { border: `1px solid ${T.br2}` } : undefined}>OUI</ToolBtn>
-            <ToolBtn onClick={() => setConfirming(false)} style={isMobile ? { border: `1px solid ${T.br2}` } : undefined}>ANNULER</ToolBtn>
+            <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: T.fg2, alignSelf: 'center' }}>Confirm?</span>
+            <ToolBtn onClick={() => onDelete(app.id)} style={isMobile ? { border: `1px solid ${T.br2}` } : undefined}>YES</ToolBtn>
+            <ToolBtn onClick={() => setConfirming(false)} style={isMobile ? { border: `1px solid ${T.br2}` } : undefined}>CANCEL</ToolBtn>
           </div>
         ) : (
           <ToolBtn onClick={() => setConfirming(true)}>
@@ -165,7 +185,12 @@ function DetailPanel({ app, onEdit, onDelete }: {
           </ToolBtn>
         )}
         <span style={{ flex: 1 }} />
-        <ToolBtn onClick={() => onEdit(app)} style={isMobile ? { border: `1px solid ${T.br2}` } : undefined}>EDIT</ToolBtn>
+        <button onClick={() => onEdit(app)} style={{
+          background: T.accent, border: `1px solid ${T.accent}`,
+          color: '#0a0b0d', fontFamily: 'var(--mono)', fontSize: 10.5,
+          fontWeight: 700, letterSpacing: '0.06em', padding: '4px 9px',
+          cursor: 'pointer', borderRadius: 2,
+        }}>EDIT</button>
       </div>
 
       {app.status === 'rejected' && (
@@ -179,9 +204,10 @@ function DetailPanel({ app, onEdit, onDelete }: {
 
 // ── List view ─────────────────────────────────────────────────────────────────
 
-export function ListView({ apps, query = '', onEdit, onDelete }: {
+export function ListView({ apps, query = '', selectedApplicationId, onEdit, onDelete }: {
   apps: Application[];
   query?: string;
+  selectedApplicationId?: string | null;
   onEdit: (app: Application) => void;
   onDelete: (id: string) => void;
 }) {
@@ -189,8 +215,15 @@ export function ListView({ apps, query = '', onEdit, onDelete }: {
   const [sortDir, setSortDir]     = useState<SortDir>('asc');
   const [statusFilter, setFilter] = useState<StatusType | 'ALL'>('ALL');
   const [selected, setSelected]   = useState<string | null>(null);
+  const rowRefs = useRef<Record<string, HTMLDivElement | HTMLTableRowElement | null>>({});
   const isMobile = useIsMobile();
   const isCompactDesktop = useIsMobile(1180);
+
+  useEffect(() => {
+    if (!selectedApplicationId) return;
+    setFilter('ALL');
+    setSelected(selectedApplicationId);
+  }, [selectedApplicationId]);
 
   const filtered = apps.filter(a => {
     if (statusFilter !== 'ALL' && a.status !== statusFilter) return false;
@@ -204,6 +237,16 @@ export function ListView({ apps, query = '', onEdit, onDelete }: {
       : String(av).localeCompare(String(bv));
     return sortDir === 'asc' ? cmp : -cmp;
   });
+
+  useEffect(() => {
+    if (!selectedApplicationId) return;
+    window.requestAnimationFrame(() => {
+      rowRefs.current[selectedApplicationId]?.scrollIntoView({
+        block: 'center',
+        behavior: 'smooth',
+      });
+    });
+  }, [selectedApplicationId, filtered.length]);
 
   const selectedInFiltered = selected ? filtered.some(a => a.id === selected) : false;
   const effectiveSelected = !isMobile && filtered.length > 0 && !selectedInFiltered
@@ -294,6 +337,7 @@ export function ListView({ apps, query = '', onEdit, onDelete }: {
             return (
               <Fragment key={a.id}>
                 <div
+                  ref={el => { rowRefs.current[a.id] = el; }}
                   onClick={() => setSelected(active ? null : a.id)}
                   role="button"
                   tabIndex={0}
@@ -367,7 +411,6 @@ export function ListView({ apps, query = '', onEdit, onDelete }: {
                     fontSize: 9.5,
                     color: T.fg3,
                   }}>
-                    <CodeTag tone="gray">{a.id.slice(0, 8)}</CodeTag>
                     <span>{a.sentDays === 0 ? 'draft' : `sent ${formatDays(a.sentDays)} ago`}</span>
                     <span style={{ flex: 1 }} />
                     <span style={{ color: active ? T.accent : T.fg3 }}>{active ? 'OPEN' : 'DETAIL'}</span>
@@ -425,7 +468,12 @@ export function ListView({ apps, query = '', onEdit, onDelete }: {
           flex: isMobile ? '0 0 auto' : 1,
           WebkitOverflowScrolling: 'touch',
         }}>
-          <table style={{ width: '100%', minWidth: isCompactDesktop ? 1040 : 1120, borderCollapse: 'collapse', fontFamily: 'var(--mono)', fontSize: 11 }}>
+          <table style={{ width: '100%', minWidth: isCompactDesktop ? 960 : 1020, tableLayout: 'fixed', borderCollapse: 'collapse', fontFamily: 'var(--mono)', fontSize: 11 }}>
+            <colgroup>
+              {HEADERS.map(h => (
+                <col key={h.k} style={{ width: h.w }} />
+              ))}
+            </colgroup>
             <thead>
               <tr>
                 {HEADERS.map(h => (
@@ -444,14 +492,13 @@ export function ListView({ apps, query = '', onEdit, onDelete }: {
             </thead>
             <tbody>
               {filtered.map((a, i) => (
-                <tr key={a.id} onClick={() => setSelected(a.id)} style={{
+                <tr key={a.id} ref={el => { rowRefs.current[a.id] = el; }} onClick={() => setSelected(a.id)} style={{
                   height: 30,
                   background: a.id === effectiveSelected ? T.accentDim : i % 2 ? T.bg1 : T.bg2,
                   color: T.fg1, borderBottom: `1px solid ${T.br0}`, cursor: 'pointer',
                   borderLeft: a.id === effectiveSelected ? `2px solid ${T.accent}` : '2px solid transparent',
                 }}>
-                  <td style={{ padding: '0 10px', color: T.fg3, fontSize: 10 }}>{a.id.slice(0, 8)}</td>
-                  <td style={{ padding: '0 10px', color: T.fg0, fontWeight: 500 }}>{a.company}</td>
+                  <td title={a.company} style={{ padding: '0 10px', color: T.fg0, fontWeight: 500, maxWidth: COMPANY_COLUMN_WIDTH, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.company}</td>
                   <td style={{ padding: '0 10px', color: T.fg2, fontSize: 10 }}>{a.type ?? 'stage'}</td>
                   <td style={{ padding: '0 10px', color: T.fg1, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.role}</td>
                   <td style={{ padding: '0 10px' }}><StatusTag status={a.status as StatusType} /></td>

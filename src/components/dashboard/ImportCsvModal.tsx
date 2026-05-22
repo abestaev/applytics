@@ -24,14 +24,14 @@ interface ParsedRow {
 const TEMPLATE_HEADERS = [
   'company', 'role', 'status', 'source', 'location', 'mode', 'salary',
   'contact', 'priority', 'link', 'notes', 'sent_at', 'type',
-  'interview_stage', 'interview_date',
+  'followup_date', 'interview_stage', 'interview_date',
 ];
 
 const TEMPLATE_ROW = [
   'Acme', 'Software Engineer Intern', 'sent', 'LinkedIn', 'Paris',
   'Hybrid', '1400€/mo', 'recruiter@acme.com', '3',
   'https://acme.com/jobs/123', 'Intro call planned', '2026-05-06',
-  'stage', '', '',
+  'stage', '', '', '',
 ];
 
 const STATUS_ALIASES: Record<string, StatusType> = {
@@ -90,6 +90,7 @@ const FIELD_ALIASES = {
   link: ['link', 'lien', 'url'],
   notes: ['notes', 'others', 'comment', 'comments'],
   sentAt: ['sent_at', 'sent date', 'date', 'date_envoi'],
+  followupDate: ['followup_date', 'followup date', 'date_relance'],
   type: ['type', 'contract', 'contrat'],
   interviewStage: ['interview_stage', 'interview stage'],
   interviewDate: ['interview_date', 'interview date'],
@@ -144,8 +145,8 @@ function parseInterviewStage(value: string, errors: string[]) {
 function parsePriority(value: string, errors: string[]) {
   if (!value) return 3;
   const priority = Number(value.replace(/^p/i, ''));
-  if ([1, 2, 3, 4].includes(priority)) return priority;
-  errors.push(`priority "${value}" invalide. Valeurs acceptées: 1, 2, 3, 4.`);
+  if ([1, 2, 3].includes(priority)) return priority;
+  errors.push(`priority "${value}" invalid. Accepted values: 1, 2, 3.`);
   return 3;
 }
 
@@ -172,6 +173,9 @@ function rowToApplication(row: CsvRow, index: number): ParsedRow {
   const status = parseStatus(valueFor(row, FIELD_ALIASES.status), errors);
   const interviewStage = parseInterviewStage(valueFor(row, FIELD_ALIASES.interviewStage), errors);
   const interviewDate = parseDate(valueFor(row, FIELD_ALIASES.interviewDate), errors, 'interview_date');
+  const followupDate = status === 'followup'
+    ? parseDate(valueFor(row, FIELD_ALIASES.followupDate), errors, 'followup_date') ?? new Date().toISOString()
+    : undefined;
   const sentAt = status === 'draft'
     ? undefined
     : parseDate(valueFor(row, FIELD_ALIASES.sentAt), errors, 'sent_at') ?? new Date().toISOString();
@@ -195,6 +199,7 @@ function rowToApplication(row: CsvRow, index: number): ParsedRow {
     link: valueFor(row, FIELD_ALIASES.link),
     notes: valueFor(row, FIELD_ALIASES.notes),
     sentAt,
+    followupDate,
     type: parseType(valueFor(row, FIELD_ALIASES.type)),
     interviewStage,
     interviewDate,

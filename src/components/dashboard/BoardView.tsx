@@ -62,7 +62,7 @@ function Card({ app, isDragging = false }: { app: Application; isDragging?: bool
           padding: '3px 6px', background: `${T.interview}15`,
           borderRadius: 2,
         }}>
-          {new Date(app.interviewDate).toLocaleString('fr-FR', {
+          {new Date(app.interviewDate).toLocaleString('en-GB', {
             day: 'numeric', month: 'short',
             hour: '2-digit', minute: '2-digit',
           })}
@@ -184,6 +184,8 @@ export function BoardView({ apps: initialApps, onStatusChange, onAdd }: {
     if (!over) return;
     const targetStatus = over.id as StatusType;
     if (!STATUS_ORDER.includes(targetStatus)) return;
+    const app = apps.find(a => a.id === active.id);
+    if (targetStatus === 'followup' && !app?.sentAt) return;
     setApps(prev =>
       prev.map(a => a.id === active.id ? { ...a, status: targetStatus } : a),
     );

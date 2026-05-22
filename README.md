@@ -80,7 +80,7 @@ company, role
 Recommended columns:
 
 ```text
-company, role, status, source, location, mode, salary, contact, priority, link, notes, sent_at, type, interview_stage, interview_date
+company, role, status, source, location, mode, salary, contact, priority, link, notes, sent_at, followup_date, type, interview_stage, interview_date
 ```
 
 A template can be downloaded from the import modal.

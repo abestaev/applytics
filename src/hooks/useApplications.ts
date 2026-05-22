@@ -7,6 +7,7 @@ function rowToApp(row: Record<string, unknown>): Application {
   const now = Date.now();
   const toDays = (ts: unknown) =>
     ts ? (now - new Date(ts as string).getTime()) / 86_400_000 : 0;
+  const priority = Number(row.priority);
 
   return {
     id:        row.id as string,
@@ -20,10 +21,11 @@ function rowToApp(row: Record<string, unknown>): Application {
     sentDays:  toDays(row.sent_at),
     lastDays:  toDays(row.last_event_at),
     contact:   row.contact as string,
-    priority:  row.priority as number,
+    priority:  [1, 2, 3].includes(priority) ? priority : 3,
     link:      row.link as string,
     notes:     row.notes as string,
     sentAt:         row.sent_at as string | undefined,
+    followupDate:   row.followup_date as string | undefined,
     type:           (row.type as AppType) ?? 'stage',
     interviewStage: row.interview_stage as InterviewStage | undefined,
     interviewDate:  row.interview_date as string | undefined,
@@ -98,6 +100,7 @@ export function useApplications() {
         type:             values.type ?? 'stage',
         interview_stage:  values.interviewStage ?? null,
         interview_date:   values.interviewDate ?? null,
+        followup_date:    values.followupDate ?? null,
         sent_at:          values.sentAt ?? null,
         last_event_at: values.sentAt ?? null,
       })
@@ -128,6 +131,10 @@ export function useApplications() {
       dbPatch.interview_date = dbPatch.interviewDate || null;
       delete dbPatch.interviewDate;
     }
+    if ('followupDate' in dbPatch) {
+      dbPatch.followup_date = dbPatch.followupDate || null;
+      delete dbPatch.followupDate;
+    }
     if ('sentAt' in dbPatch) {
       dbPatch.sent_at = dbPatch.sentAt || null;
       delete dbPatch.sentAt;
@@ -156,7 +163,9 @@ export function useApplications() {
   };
 
   const updateStatus = async (id: string, status: StatusType) => {
-    await update(id, { status });
+    const patch: Partial<Application> = { status };
+    if (status === 'followup') patch.followupDate = new Date().toISOString();
+    await update(id, patch);
   };
 
   const remove = async (id: string) => {

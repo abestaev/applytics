@@ -67,7 +67,7 @@ const APPS: { id: string; co: string; role: string; type: string; status: S; src
   { id: 'c1d2e3f4', co: 'Qonto',         role: 'Product Engineer Intern',     type: 'stage',      status: 'SE', src: 'Indeed',    loc: 'Paris',     sent: '4d',  days: 4,  p: 3 },
   { id: 'a5b6c7d8', co: 'Hugging Face',  role: 'ML Research Intern',          type: 'stage',      status: 'SE', src: 'Direct',    loc: 'Paris',     sent: '7d',  days: 7,  p: 1 },
   { id: 'e9f0a1b2', co: 'Sorare',        role: 'Full-stack Intern',           type: 'stage',      status: 'OF', src: 'Direct',    loc: 'Paris',     sent: '28d', days: 28, p: 1 },
-  { id: 'c3d4e5f6', co: 'Algolia',       role: 'Backend Intern',              type: 'stage',      status: 'RJ', src: 'WTTJ',      loc: 'Paris',     sent: '21d', days: 21, p: 4 },
+  { id: 'c3d4e5f6', co: 'Algolia',       role: 'Backend Intern',              type: 'stage',      status: 'RJ', src: 'WTTJ',      loc: 'Paris',     sent: '21d', days: 21, p: 3 },
   { id: 'a7b8c9d0', co: 'Alan',          role: 'Data Engineer Intern',        type: 'alternance', status: 'DR', src: 'LinkedIn',  loc: 'Paris',     sent: '1d',  days: 1,  p: 2 },
   { id: 'e1f2a3b4', co: 'Ledger',        role: 'Security Intern',             type: 'stage',      status: 'DR', src: 'LinkedIn',  loc: 'Paris',     sent: 'now', days: 0,  p: 2 },
   { id: 'c5d6e7f8', co: 'BlaBlaCar',     role: 'iOS Engineer Intern',         type: 'stage',      status: 'DR', src: 'LinkedIn',  loc: 'Paris',     sent: '2d',  days: 2,  p: 3 },

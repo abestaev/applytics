@@ -20,6 +20,7 @@ export interface Application {
   link: string;
   notes: string;
   sentAt?: string;
+  followupDate?: string;
   type?: AppType;
   interviewStage?: InterviewStage;
   interviewDate?: string;

@@ -31,12 +31,15 @@ interface FormState {
   link: string;
   notes: string;
   sentAt: string;
+  followupDate: string;
 }
 
 const INITIAL: FormState = {
-  company: '', role: '', source: 'LinkedIn', loc: 'Paris',
+  company: '', role: '', source: '', loc: 'Paris',
   remote: 'Hybrid', salary: '', contact: '', status: 'draft',
-  type: 'stage', interviewStage: '', interviewDate: '', priority: 3, link: '', notes: '', sentAt: new Date().toISOString().slice(0, 10),
+  type: 'stage', interviewStage: '', interviewDate: '', priority: 3, link: '', notes: '',
+  sentAt: '',
+  followupDate: toLocalInput(new Date().toISOString()),
 };
 
 function initialForm(status: StatusType = 'draft'): FormState {
@@ -51,8 +54,9 @@ function appToForm(app: Application): FormState {
     type: app.type ?? 'stage',
     interviewStage: app.interviewStage ?? '',
     interviewDate: app.interviewDate ? toLocalInput(app.interviewDate) : '',
-    priority: app.priority, link: app.link, notes: app.notes,
-    sentAt: app.sentAt ? app.sentAt.slice(0, 10) : new Date().toISOString().slice(0, 10),
+    priority: Math.min(app.priority, 3), link: app.link, notes: app.notes,
+    sentAt: app.sentAt ? toLocalInput(app.sentAt) : toLocalInput(new Date().toISOString()),
+    followupDate: app.followupDate ? toLocalInput(app.followupDate) : toLocalInput(new Date().toISOString()),
   };
 }
 
@@ -158,7 +162,7 @@ function Field({ label, value, onChange, placeholder, full }: {
 
 function SelectField<V extends string | number>({ label, value, onChange, options }: {
   label: string; value: V; onChange: (v: V) => void;
-  options: { value: V; label: string }[] | string[];
+  options: { value: V; label: string; disabled?: boolean }[] | string[];
 }) {
   return (
     <div>
@@ -174,7 +178,8 @@ function SelectField<V extends string | number>({ label, value, onChange, option
         {options.map(o => {
           const v = typeof o === 'object' ? String(o.value) : o;
           const l = typeof o === 'object' ? o.label : o;
-          return <option key={v} value={v}>{l}</option>;
+          const disabled = typeof o === 'object' ? o.disabled : false;
+          return <option key={v} value={v} disabled={disabled}>{l}</option>;
         })}
       </select>
     </div>
@@ -207,6 +212,10 @@ export function AddModal({ open, onClose, onAdd, onUpdate, totalApps, initialSta
 
   const handleSubmit = async () => {
     if (!form.company) return;
+    if (form.status === 'followup' && !form.sentAt) {
+      setError('A sent date is required before switching to followup.');
+      return;
+    }
     setSaving(true);
     setError(null);
     try {
@@ -215,11 +224,15 @@ export function AddModal({ open, onClose, onAdd, onUpdate, totalApps, initialSta
       const sentAt = form.status === 'draft'
         ? undefined
         : form.sentAt ? new Date(form.sentAt).toISOString() : new Date().toISOString();
+      const followupDate = form.status === 'followup'
+        ? form.followupDate ? new Date(form.followupDate).toISOString() : new Date().toISOString()
+        : undefined;
       if (isEdit) {
         await onUpdate(editApp.id, {
           ...form,
           interviewStage: stage as InterviewStage | undefined,
           interviewDate: iDate,
+          followupDate,
           sentAt,
         });
       } else {
@@ -227,12 +240,13 @@ export function AddModal({ open, onClose, onAdd, onUpdate, totalApps, initialSta
           ...form,
           interviewStage: stage as InterviewStage | undefined,
           interviewDate: iDate,
+          followupDate,
           sentAt,
         });
       }
       onClose();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Une erreur est survenue');
+      setError(e instanceof Error ? e.message : 'An error occurred');
     } finally {
       setSaving(false);
     }
@@ -281,8 +295,19 @@ export function AddModal({ open, onClose, onAdd, onUpdate, totalApps, initialSta
           <SelectField label="MODE"     value={form.remote}   onChange={v => set('remote', v)}
             options={['On-site', 'Hybrid', 'Remote']} />
           <Field label="SALARY"   value={form.salary}  onChange={v => set('salary', v)}   placeholder="1400€/mo" />
-          <SelectField label="STATUS"   value={form.status}   onChange={v => set('status', v as StatusType)}
-            options={STATUS_ORDER.map(s => ({ value: s, label: STATUS_META[s].label }))} />
+          <SelectField label="STATUS"   value={form.status}   onChange={v => {
+            const status = v as StatusType;
+            if (status === 'followup' && !form.sentAt) return;
+            const today = toLocalInput(new Date().toISOString());
+            if (status !== 'draft' && !form.sentAt) set('sentAt', today);
+            if (status === 'followup' && !form.followupDate) set('followupDate', today);
+            set('status', status);
+          }}
+            options={STATUS_ORDER.map(s => ({
+              value: s,
+              label: s === 'followup' && !form.sentAt ? `${STATUS_META[s].label} · needs sent date` : STATUS_META[s].label,
+              disabled: s === 'followup' && !form.sentAt,
+            }))} />
           {form.status === 'interview' && (
             <SelectField label="INTERVIEW STAGE" value={form.interviewStage} onChange={v => set('interviewStage', v as InterviewStage | '')}
               options={[
@@ -316,15 +341,20 @@ export function AddModal({ open, onClose, onAdd, onUpdate, totalApps, initialSta
               { value: 'freelance',  label: 'Freelance' },
             ]} />
           <div>
-            <FieldLabel>SENT DATE</FieldLabel>
+            <FieldLabel>{form.status === 'followup' ? 'FOLLOWUP DATE' : 'SENT DATE'}</FieldLabel>
             <input
-              type={form.status === 'draft' ? 'text' : 'date'}
-              value={form.status === 'draft' ? 'jj/mm/aaaa' : form.sentAt}
-              onChange={e => form.status !== 'draft' && set('sentAt', e.target.value)}
+              type="datetime-local"
+              value={form.status === 'draft' ? '' : form.status === 'followup' ? form.followupDate : form.sentAt}
+              onChange={e => {
+                if (form.status === 'draft') return;
+                if (form.status === 'followup') set('followupDate', e.target.value);
+                else set('sentAt', e.target.value);
+              }}
               disabled={form.status === 'draft'}
+              placeholder="jj/mm/aaaa --:--"
               style={{
                 width: '100%', background: T.bg0, border: `1px solid ${T.br1}`,
-                color: form.status === 'draft' ? T.fg3 : form.sentAt ? T.fg0 : T.fg3,
+                color: form.status === 'draft' ? T.fg3 : (form.status === 'followup' ? form.followupDate : form.sentAt) ? T.fg0 : T.fg3,
                 fontFamily: 'var(--mono)', fontSize: 11,
                 padding: '6px 9px', outline: 'none', height: 28,
                 colorScheme: 'dark', cursor: form.status === 'draft' ? 'not-allowed' : 'auto',
@@ -335,7 +365,7 @@ export function AddModal({ open, onClose, onAdd, onUpdate, totalApps, initialSta
           <SelectField label="PRIORITY" value={form.priority} onChange={v => set('priority', v)}
             options={[
               { value: 1, label: 'P1 · top' }, { value: 2, label: 'P2 · high' },
-              { value: 3, label: 'P3 · normal' }, { value: 4, label: 'P4 · low' },
+              { value: 3, label: 'P3 · normal' },
             ]} />
           <Field label="CONTACT"  value={form.contact} onChange={v => set('contact', v)}  full />
           <Field label="LIEN"     value={form.link}    onChange={v => set('link', v)}     placeholder="company.com/jobs/…" full />

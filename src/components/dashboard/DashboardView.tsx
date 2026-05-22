@@ -20,7 +20,15 @@ function PipelinePanel({ apps, expand, code = '01', style }: {
   code?: string;
   style?: CSSProperties;
 }) {
-  const sorted = apps.slice().sort((a, b) => a.sentDays - b.sentDays).slice(0, 14);
+  const now = Date.now();
+  const sentApps = apps.filter(a => {
+    if (a.status === 'draft' || !a.sentAt) return false;
+    const daysAgo = (now - new Date(a.sentAt).getTime()) / 86_400_000;
+    return daysAgo >= 0 && daysAgo <= 14;
+  });
+  const sorted = (sentApps.length > 0 ? sentApps : apps)
+    .slice()
+    .sort((a, b) => new Date(b.sentAt ?? 0).getTime() - new Date(a.sentAt ?? 0).getTime());
 
   if (apps.length === 0) {
     return (
@@ -30,14 +38,14 @@ function PipelinePanel({ apps, expand, code = '01', style }: {
           fontFamily: 'var(--mono)', fontSize: 10.5, color: T.fg3,
           letterSpacing: '0.08em', padding: 24,
         }}>
-          Aucune candidature — clique sur + NEW pour commencer
+          No applications yet — click + NEW to get started
         </div>
       </Panel>
     );
   }
 
   return (
-      <Panel code={code} title="Pipeline · last 14"
+      <Panel code={code} title="Pipeline · last 14d"
       action={<span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: T.fg2 }}>sorted by sent_at desc</span>}
       style={{ gridRow: '2 / 3', ...style }} scroll={!expand} expand={expand}
     >
@@ -87,7 +95,7 @@ function DistributionPanel({ apps, total, expand, code = '02', style }: {
     <Panel code={code} title="Pipeline distribution" style={style} expand={expand}>
       <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 9 }}>
         {total === 0 ? (
-          <span style={{ color: T.fg3, fontFamily: 'var(--mono)', fontSize: 10.5 }}>Aucune candidature</span>
+          <span style={{ color: T.fg3, fontFamily: 'var(--mono)', fontSize: 10.5 }}>No applications</span>
         ) : STATUS_ORDER.map(s => {
           const count = apps.filter(a => a.status === s).length;
           const m = STATUS_META[s];
@@ -125,7 +133,7 @@ function SourcesPanel({ apps, expand, code = '03', style }: {
     <Panel code={code} title="Sources" style={style} expand={expand}>
       <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 7, fontFamily: 'var(--mono)', fontSize: 10.5 }}>
         {sourceEntries.length === 0 ? (
-          <span style={{ color: T.fg3, fontSize: 10.5 }}>Aucune source</span>
+          <span style={{ color: T.fg3, fontSize: 10.5 }}>No source</span>
         ) : sourceEntries.map(([k, v]) => (
           <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ width: 150, color: T.fg1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{k}</span>
@@ -167,11 +175,12 @@ function isToday(iso?: string) {
     && d.getDate() === now.getDate();
 }
 
-function TodoPanel({ apps, expand, code = '04', style }: {
+function TodoPanel({ apps, expand, code = '04', style, onOpenApplication }: {
   apps: Application[];
   expand?: boolean;
   code?: string;
   style?: CSSProperties;
+  onOpenApplication?: (id: string) => void;
 }) {
   const { dailyGoal, setDailyGoal } = useUserSettings();
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -239,7 +248,14 @@ function TodoPanel({ apps, expand, code = '04', style }: {
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 6,
+          maxHeight: expand ? 360 : undefined,
+          overflowY: expand ? 'auto' : undefined,
+          paddingRight: expand && followups.length > 5 ? 2 : 0,
+        }}>
           {remaining > 0 && (
             <div style={{ padding: '9px 10px', background: T.bg2, border: `1px solid ${T.br0}` }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -250,8 +266,23 @@ function TodoPanel({ apps, expand, code = '04', style }: {
             </div>
           )}
 
-          {followups.slice(0, 5).map(a => (
-            <div key={a.id} style={{ padding: '9px 10px', background: T.bg2, border: `1px solid ${T.br0}` }}>
+          {followups.map(a => (
+            <div
+              key={a.id}
+              onClick={() => onOpenApplication?.(a.id)}
+              role={onOpenApplication ? 'button' : undefined}
+              tabIndex={onOpenApplication ? 0 : undefined}
+              onKeyDown={e => {
+                if (!onOpenApplication) return;
+                if (e.key === 'Enter' || e.key === ' ') onOpenApplication(a.id);
+              }}
+              style={{
+                padding: '9px 10px',
+                background: T.bg2,
+                border: `1px solid ${T.br0}`,
+                cursor: onOpenApplication ? 'pointer' : 'default',
+              }}
+            >
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Pill tone="amber" size="xs">FU</Pill>
                 <span style={{ color: T.fg0, fontSize: 10.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -265,12 +296,6 @@ function TodoPanel({ apps, expand, code = '04', style }: {
               </div>
             </div>
           ))}
-
-          {followups.length > 5 && (
-            <div style={{ color: T.fg3, fontSize: 10, padding: '0 2px' }}>
-              +{followups.length - 5} more followups
-            </div>
-          )}
 
           {todoCount === 0 && (
             <div style={{ color: T.fg3, fontSize: 10.5, padding: '4px 0' }}>
@@ -382,7 +407,7 @@ function UpcomingPanel({ apps, expand, code = '05', style }: {
               <Pill tone="cyan" size="xs">{STATUS_META[a.status].short}</Pill>
               <div style={{ fontFamily: 'var(--mono)', fontSize: 9.5, color: T.fg3, marginTop: 3 }}>
                 {a.interviewDate
-  ? new Date(a.interviewDate).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false })
+  ? new Date(a.interviewDate).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false })
   : 'date tbd'}
               </div>
             </div>
@@ -438,7 +463,10 @@ function ActivityPanel({ apps, expand, code = '06', style }: {
   );
 }
 
-export function DashboardView({ apps }: { apps: Application[] }) {
+export function DashboardView({ apps, onOpenApplication }: {
+  apps: Application[];
+  onOpenApplication?: (id: string) => void;
+}) {
   const stats = computeStats(apps);
   const isMobile = useIsMobile();
   const isCompactDesktop = useIsMobile(1440);
@@ -498,7 +526,7 @@ export function DashboardView({ apps }: { apps: Application[] }) {
             </div>
           ))}
         </div>
-        <TodoPanel apps={apps} expand code="01" />
+        <TodoPanel apps={apps} expand code="01" onOpenApplication={onOpenApplication} />
         <UpcomingPanel apps={apps} expand code="02" />
         <PipelinePanel apps={apps} expand code="03" />
         <MiddleColumn apps={apps} total={stats.total} expand codes={{ distribution: '04', sources: '05', activity: '06' }} />
@@ -538,7 +566,7 @@ export function DashboardView({ apps }: { apps: Application[] }) {
         <PipelinePanel apps={apps} expand style={{ gridColumn: '1 / -1', gridRow: 'auto' }} />
         <DistributionPanel apps={apps} total={stats.total} expand />
         <SourcesPanel apps={apps} expand />
-        <TodoPanel apps={apps} expand />
+        <TodoPanel apps={apps} expand onOpenApplication={onOpenApplication} />
         <UpcomingPanel apps={apps} expand />
         <ActivityPanel apps={apps} expand style={{ gridColumn: '1 / -1' }} />
       </div>
@@ -575,7 +603,7 @@ export function DashboardView({ apps }: { apps: Application[] }) {
         display: 'flex', flexDirection: 'column', gap: 1, background: T.br0,
         minHeight: 0,
       }}>
-        <TodoPanel apps={apps} />
+        <TodoPanel apps={apps} style={{ flex: 1 }} onOpenApplication={onOpenApplication} />
         <UpcomingPanel apps={apps} />
       </div>
     </div>
